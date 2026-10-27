@@ -228,7 +228,8 @@ type TabName = "home" | "check" | "history" | "profile";
 
 export default function HomeScreen() {
   const { width: screenWidth } = useWindowDimensions();
-  const TIP_CARD_WIDTH = screenWidth >= 768 ? Math.min(360, screenWidth - 80) : screenWidth - 48;
+  const containerWidth = Math.min(screenWidth, 420);
+  const TIP_CARD_WIDTH = containerWidth - 48;
   const [activeTab, setActiveTab] = useState<TabName>("home");
   const [waterValue, setWaterValue] = useState(1.5);
   const [checkState, setCheckState] = useState<"idle" | "calibrating" | "ready">("idle");
