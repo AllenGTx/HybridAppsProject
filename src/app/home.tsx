@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
+import CheckScreen from "./check";
 
 const { width } = Dimensions.get("window");
 
@@ -249,23 +250,21 @@ export default function HomeScreen() {
   };
 
   const handleCheckNow = () => {
-    if (checkState !== "idle") return;
-    setCheckState("calibrating");
-    setTimeout(() => {
-      setCheckState("ready");
-      setTimeout(() => setCheckState("idle"), 1800);
-    }, 1200);
+    setActiveTab("check");
   };
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <Header />
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+      {activeTab === "check" ? (
+        <CheckScreen />
+      ) : (
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
         <View style={styles.contentContainer}>
 
           {/* Greeting */}
@@ -291,7 +290,7 @@ export default function HomeScreen() {
               <View style={styles.highlightInner}>
                 <View style={styles.highlightRow}>
                   <View style={styles.vitalsHubBadge}>
-                    <MaterialIcons name="local-hospital" size={11} color="#aef1cd" />
+                    <MaterialIcons name="monitor-heart" size={13} color="#aef1cd" />
                     <Text style={styles.vitalsHubText}> Vitals Hub</Text>
                   </View>
                   <View style={styles.lastCheckBadge}>
@@ -381,6 +380,7 @@ export default function HomeScreen() {
           <View style={{ height: 24 }} />
         </View>
       </ScrollView>
+      )}
 
       {/* Bottom nav */}
       <View style={styles.bottomNav}>
@@ -423,9 +423,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
-    backgroundColor: "rgba(239,252,245,0.95)",
+    backgroundColor: "rgba(224, 245, 234, 0.85)",
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(27,94,67,0.06)",
+    borderBottomColor: "rgba(0, 106, 67, 0.08)",
   },
   headerInner: {
     flexDirection: "row",
