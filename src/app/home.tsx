@@ -16,6 +16,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import CheckScreen from "./check";
+import ProfileScreen from "./profile";
 
 const { width } = Dimensions.get("window");
 
@@ -259,6 +260,8 @@ export default function HomeScreen() {
 
       {activeTab === "check" ? (
         <CheckScreen />
+      ) : activeTab === "profile" ? (
+        <ProfileScreen />
       ) : (
         <ScrollView
           style={styles.scrollView}
