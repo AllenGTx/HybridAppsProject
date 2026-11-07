@@ -292,9 +292,9 @@ export default function HomeScreen() {
 
               <View style={styles.highlightInner}>
                 <View style={styles.highlightRow}>
-                  <View style={styles.vitalsHubBadge}>
-                    <MaterialIcons name="monitor-heart" size={13} color="#aef1cd" />
-                    <Text style={styles.vitalsHubText}> Vitals Hub</Text>
+                  <View style={styles.highlightTitleRow}>
+                    <PulsingHeart />
+                    <Text style={styles.highlightTitle}>Heart Health Check</Text>
                   </View>
                   <View style={styles.lastCheckBadge}>
                     <View style={styles.lastCheckDot} />
@@ -302,10 +302,6 @@ export default function HomeScreen() {
                   </View>
                 </View>
 
-                <View style={styles.highlightTitleRow}>
-                  <PulsingHeart />
-                  <Text style={styles.highlightTitle}>Heart Health Check</Text>
-                </View>
                 <Text style={styles.highlightBody}>
                   Comprehensive vascular check ready. Capture blood flow dynamics &amp; HRV in 45 seconds.
                 </Text>
@@ -474,7 +470,7 @@ const styles = StyleSheet.create({
   // Heart check card
   highlightCard: {
     borderRadius: 20, overflow: "hidden",
-    backgroundColor: "#006a43", marginBottom: 20, position: "relative",
+    backgroundColor: "#006a43", marginBottom: 24, position: "relative",
   },
   pulseRing1: {
     position: "absolute", right: -40, top: -40,
@@ -486,29 +482,22 @@ const styles = StyleSheet.create({
     width: 100, height: 100, borderRadius: 50,
     backgroundColor: "rgba(255,255,255,0.07)",
   },
-  highlightInner: { padding: 20, gap: 10 },
+  highlightInner: { paddingHorizontal: 22, paddingVertical: 22, gap: 8 },
   highlightRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  vitalsHubBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.15)", paddingHorizontal: 10,
-    paddingVertical: 4, borderRadius: 999,
-  },
-  vitalsHubText: { fontSize: 11, fontWeight: "600", color: "#aef1cd", letterSpacing: 0.5 },
   lastCheckBadge: {
     flexDirection: "row", alignItems: "center", gap: 5,
     backgroundColor: "rgba(255,255,255,0.12)",
-    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999,
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999,
   },
   lastCheckDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#aef1cd" },
   lastCheckText: { fontSize: 11, color: "#aef1cd" },
   highlightTitleRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  highlightTitle: { fontSize: 18, fontWeight: "700", color: "#ffffff" },
-  highlightBody: { fontSize: 13, color: "rgba(255,255,255,0.8)", lineHeight: 19 },
+  highlightTitle: { fontSize: 19, fontWeight: "700", color: "#ffffff", letterSpacing: -0.2 },
+  highlightBody: { fontSize: 13, color: "rgba(255,255,255,0.85)", lineHeight: 20 },
   checkButton: {
     backgroundColor: "#ffffff", borderRadius: 14,
     flexDirection: "row", alignItems: "center", justifyContent: "center",
-    paddingVertical: 13, gap: 6, marginTop: 4,
+    paddingVertical: 14, gap: 6, marginTop: 12,
   },
   checkButtonText: { fontSize: 14, fontWeight: "600", color: "#006a43" },
 

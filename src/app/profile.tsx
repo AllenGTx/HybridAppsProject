@@ -84,6 +84,83 @@ export default function ProfileScreen({
         </View>
       </TouchableOpacity>
 
+      <View style={styles.medicalCard}>
+        <View style={styles.medicalHeader}>
+          <MaterialIcons name="medical-services" size={18} color="#dc2626" />
+          <Text style={styles.medicalTitle}>Medical ID</Text>
+        </View>
+
+        <View style={styles.bioStrip}>
+          <View style={styles.bioItem}>
+            <Text style={styles.bioLabel}>Gender</Text>
+            <Text style={styles.bioValue}>Male</Text>
+          </View>
+          <View style={styles.bioDivider} />
+          <View style={styles.bioItem}>
+            <Text style={styles.bioLabel}>Age</Text>
+            <Text style={styles.bioValue}>
+              30-34 <Text style={styles.bioUnit}>yrs</Text>
+            </Text>
+          </View>
+          <View style={styles.bioDivider} />
+          <View style={styles.bioItem}>
+            <Text style={styles.bioLabel}>Height</Text>
+            <Text style={styles.bioValue}>
+              172 <Text style={styles.bioUnit}>cm</Text>
+            </Text>
+          </View>
+          <View style={styles.bioDivider} />
+          <View style={styles.bioItem}>
+            <Text style={styles.bioLabel}>Weight</Text>
+            <Text style={styles.bioValue}>
+              68 <Text style={styles.bioUnit}>kg</Text>
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.medicalRow}>
+          <Text style={styles.medicalLabel}>Blood Type</Text>
+          <Text style={styles.medicalValue}>B</Text>
+        </View>
+        <View style={styles.medicalRow}>
+          <Text style={styles.medicalLabel}>Blood Pressure</Text>
+          <Text style={styles.medicalValue}>
+            118/76 <Text style={styles.medicalUnit}>mmHg</Text>
+          </Text>
+        </View>
+        <View style={styles.medicalRow}>
+          <Text style={styles.medicalLabel}>HDL Cholesterol</Text>
+          <Text style={styles.medicalValue}>
+            58 <Text style={styles.medicalUnit}>mg/dL</Text>
+          </Text>
+        </View>
+        <View style={styles.medicalRow}>
+          <Text style={styles.medicalLabel}>LDL Cholesterol</Text>
+          <Text style={styles.medicalValue}>
+            94 <Text style={styles.medicalUnit}>mg/dL</Text>
+          </Text>
+        </View>
+        <View style={styles.medicalRow}>
+          <Text style={styles.medicalLabel}>Smoking</Text>
+          <Text style={styles.medicalValue}>Never Smoked</Text>
+        </View>
+        <View style={styles.medicalRow}>
+          <Text style={styles.medicalLabel}>Conditions</Text>
+          <Text style={styles.medicalValue}>None</Text>
+        </View>
+
+        <TouchableOpacity style={styles.emergencyRow} activeOpacity={0.6}>
+          <View>
+            <Text style={styles.medicalLabel}>Emergency Contact</Text>
+            <Text style={styles.emergencyNumber}>+62 812-3456-7890</Text>
+          </View>
+          <View style={styles.emergencyRight}>
+            <Text style={styles.emergencyRelation}>Family</Text>
+            <MaterialIcons name="chevron-right" size={20} color="#94a3b8" />
+          </View>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.performanceCard}>
         <View style={styles.performanceHeader}>
           <Text style={styles.performanceTitle}>Healthy Living Score</Text>
@@ -173,7 +250,9 @@ export default function ProfileScreen({
       <View style={styles.bmiCard}>
         <View style={styles.bmiHeaderRow}>
           <Text style={styles.bmiTitle}>Body Mass Index</Text>
-          <Text style={styles.bmiSubtitle}>172 cm • 68 kg • 30-34 yrs</Text>
+          <Text style={styles.bmiSubtitle}>
+            Adult weight classification based on height and weight
+          </Text>
         </View>
 
         <View style={styles.bmiGaugeBox}>
@@ -287,12 +366,12 @@ export default function ProfileScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#effcf5",
   },
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 12,
-    paddingBottom: 40,
+    paddingBottom: 96,
   },
   topBar: {
     flexDirection: "row",
@@ -312,7 +391,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: "#dcece3",
   },
   profileHeader: {
     flexDirection: "row",
@@ -337,7 +416,7 @@ const styles = StyleSheet.create({
   },
   joinText: {
     fontSize: 12,
-    color: "#94a3b8",
+    color: "#64748b",
     marginTop: 4,
   },
   avatarContainer: {
@@ -345,7 +424,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     borderRadius: 42,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: "#dcece3",
   },
   avatar: {
     width: 72,
@@ -416,13 +495,111 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.18)",
   },
+  medicalCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingTop: 16,
+    paddingBottom: 6,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#dcece3",
+  },
+  medicalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 6,
+  },
+  medicalTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#0f172a",
+  },
+  bioStrip: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f3faf6",
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    marginTop: 6,
+    marginBottom: 4,
+  },
+  bioItem: {
+    flex: 1,
+    alignItems: "center",
+  },
+  bioLabel: {
+    fontSize: 11,
+    fontWeight: "500",
+    color: "#475569",
+    marginBottom: 2,
+  },
+  bioValue: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#0f172a",
+  },
+  bioUnit: {
+    fontSize: 11,
+    fontWeight: "500",
+    color: "#475569",
+  },
+  bioDivider: {
+    width: 1,
+    height: 26,
+    backgroundColor: "#dcece3",
+  },
+  medicalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f1f5f9",
+  },
+  medicalLabel: {
+    fontSize: 14,
+    color: "#64748b",
+  },
+  medicalValue: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#0f172a",
+  },
+  medicalUnit: {
+    fontSize: 12,
+    color: "#64748b",
+  },
+  emergencyRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  emergencyNumber: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#0f172a",
+    marginTop: 2,
+  },
+  emergencyRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+  },
+  emergencyRelation: {
+    fontSize: 14,
+    color: "#64748b",
+  },
   performanceCard: {
     backgroundColor: "#ffffff",
     borderRadius: 20,
     padding: 18,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: "#dcece3",
   },
   performanceHeader: {
     marginBottom: 10,
@@ -529,7 +706,7 @@ const styles = StyleSheet.create({
     padding: 18,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: "#dcece3",
   },
   bmiHeaderRow: {
     marginBottom: 14,
@@ -546,13 +723,13 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   bmiGaugeBox: {
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#f3faf6",
     borderRadius: 16,
     paddingTop: 14,
     paddingBottom: 12,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#f1f5f9",
+    borderColor: "#e2f2ea",
     marginBottom: 14,
   },
   bmiGaugeSvgWrap: {
@@ -583,11 +760,11 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   bmiDetailBox: {
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#f3faf6",
     borderRadius: 16,
     padding: 14,
     borderWidth: 1,
-    borderColor: "#f1f5f9",
+    borderColor: "#e2f2ea",
     marginBottom: 14,
   },
   bmiSummaryText: {
