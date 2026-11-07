@@ -261,7 +261,7 @@ export default function HomeScreen() {
       {activeTab === "check" ? (
         <CheckScreen />
       ) : activeTab === "profile" ? (
-        <ProfileScreen />
+        <ProfileScreen onEditBmi={() => setActiveTab("check")} />
       ) : (
         <ScrollView
           style={styles.scrollView}

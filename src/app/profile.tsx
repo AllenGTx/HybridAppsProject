@@ -16,9 +16,28 @@ const profileImg = require("../../assets/Profile.jpg");
 const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN"];
 const Y_LABELS = [200, 150, 100, 50, 0];
 
-export default function ProfileScreen() {
+const BMI_CATEGORIES = [
+  { label: "Underweight", range: "Below 18.5", color: "#38bdf8", active: false },
+  { label: "Normal", range: "18.5 to 24.9", color: "#10b981", active: true },
+  { label: "Overweight", range: "25.0 to 29.9", color: "#f59e0b", active: false },
+  { label: "Obesity", range: "30 or greater", color: "#ef4444", active: false },
+];
+
+export default function ProfileScreen({
+  onEditBmi,
+}: {
+  onEditBmi?: () => void;
+}) {
   const handleLogout = () => {
     router.replace("/welcome");
+  };
+
+  const handleEditBmi = () => {
+    if (onEditBmi) {
+      onEditBmi();
+    } else {
+      router.push("/check");
+    }
   };
 
   return (
@@ -149,6 +168,108 @@ export default function ProfileScreen() {
             </View>
           </View>
         </View>
+      </View>
+
+      <View style={styles.bmiCard}>
+        <View style={styles.bmiHeaderRow}>
+          <Text style={styles.bmiTitle}>Body Mass Index</Text>
+          <Text style={styles.bmiSubtitle}>172 cm • 68 kg • 30-34 yrs</Text>
+        </View>
+
+        <View style={styles.bmiGaugeBox}>
+          <View style={styles.bmiGaugeSvgWrap}>
+            <Svg width={240} height={126} viewBox="0 0 240 126">
+              <Path
+                d="M 24 111 A 96 96 0 0 1 45 58"
+                fill="none"
+                stroke="#38bdf8"
+                strokeWidth="9"
+                strokeLinecap="round"
+              />
+              <Path
+                d="M 60 43 A 96 96 0 0 1 110 23"
+                fill="none"
+                stroke="#10b981"
+                strokeWidth="9"
+                strokeLinecap="round"
+              />
+              <Path
+                d="M 130 23 A 96 96 0 0 1 180 43"
+                fill="none"
+                stroke="#f59e0b"
+                strokeWidth="9"
+                strokeLinecap="round"
+              />
+              <Path
+                d="M 195 58 A 96 96 0 0 1 216 111"
+                fill="none"
+                stroke="#ef4444"
+                strokeWidth="9"
+                strokeLinecap="round"
+              />
+              <Path
+                d="M 44 118 A 76 76 0 0 1 196 118 Z"
+                fill="#059669"
+              />
+            </Svg>
+
+            <View style={styles.bmiGaugeCenter}>
+              <Text style={styles.bmiGaugeValue}>23.0</Text>
+              <Text style={styles.bmiGaugeLabel}>Normal</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.bmiDetailBox}>
+          <Text style={styles.bmiSummaryText}>
+            Based on the information entered, your body mass index (BMI) is{" "}
+            <Text style={styles.bmiSummaryBold}>23.0</Text>, placing your weight
+            in the <Text style={styles.bmiSummaryBold}>Normal</Text> category
+            for adults of your height.
+          </Text>
+
+          <View style={styles.bmiTable}>
+            {BMI_CATEGORIES.map((item, index) => (
+              <View
+                key={item.label}
+                style={[
+                  styles.bmiTableRow,
+                  item.active && styles.bmiTableRowActive,
+                  index === BMI_CATEGORIES.length - 1 && styles.bmiTableRowLast,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.bmiRowCategory,
+                    item.active && styles.bmiRowTextActive,
+                  ]}
+                >
+                  {item.label}
+                </Text>
+                <Text
+                  style={[
+                    styles.bmiRowRange,
+                    item.active && styles.bmiRowTextActive,
+                  ]}
+                >
+                  {item.range}
+                </Text>
+                <View
+                  style={[styles.bmiColorBar, { backgroundColor: item.color }]}
+                />
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <TouchableOpacity
+          style={styles.bmiEditButton}
+          activeOpacity={0.85}
+          onPress={handleEditBmi}
+        >
+          <MaterialIcons name="tune" size={17} color="#ffffff" />
+          <Text style={styles.bmiEditButtonText}>Edit Information</Text>
+        </TouchableOpacity>
       </View>
 
       <TouchableOpacity
@@ -401,6 +522,140 @@ const styles = StyleSheet.create({
   xAxisLabelActive: {
     color: "#047857",
     fontWeight: "700",
+  },
+  bmiCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+  },
+  bmiHeaderRow: {
+    marginBottom: 14,
+  },
+  bmiTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#0f172a",
+    letterSpacing: -0.2,
+  },
+  bmiSubtitle: {
+    fontSize: 12,
+    color: "#64748b",
+    marginTop: 2,
+  },
+  bmiGaugeBox: {
+    backgroundColor: "#f8fafc",
+    borderRadius: 16,
+    paddingTop: 14,
+    paddingBottom: 12,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#f1f5f9",
+    marginBottom: 14,
+  },
+  bmiGaugeSvgWrap: {
+    width: 240,
+    height: 126,
+    position: "relative",
+    alignItems: "center",
+    justifyContent: "flex-end",
+  },
+  bmiGaugeCenter: {
+    position: "absolute",
+    bottom: 14,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+  },
+  bmiGaugeValue: {
+    fontSize: 30,
+    fontWeight: "800",
+    color: "#ffffff",
+    letterSpacing: -0.8,
+    lineHeight: 34,
+  },
+  bmiGaugeLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#d1fae5",
+    marginTop: 1,
+  },
+  bmiDetailBox: {
+    backgroundColor: "#f8fafc",
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#f1f5f9",
+    marginBottom: 14,
+  },
+  bmiSummaryText: {
+    fontSize: 13,
+    lineHeight: 19,
+    color: "#475569",
+    marginBottom: 12,
+  },
+  bmiSummaryBold: {
+    fontWeight: "700",
+    color: "#0f172a",
+  },
+  bmiTable: {
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    overflow: "hidden",
+  },
+  bmiTableRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f1f5f9",
+  },
+  bmiTableRowActive: {
+    backgroundColor: "#ecfdf5",
+  },
+  bmiTableRowLast: {
+    borderBottomWidth: 0,
+  },
+  bmiRowCategory: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#334155",
+  },
+  bmiRowRange: {
+    width: 102,
+    fontSize: 12,
+    fontWeight: "500",
+    color: "#64748b",
+  },
+  bmiRowTextActive: {
+    fontWeight: "700",
+    color: "#047857",
+  },
+  bmiColorBar: {
+    width: 36,
+    height: 12,
+    borderRadius: 6,
+  },
+  bmiEditButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#047857",
+    borderRadius: 14,
+    paddingVertical: 13,
+  },
+  bmiEditButtonText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#ffffff",
+    letterSpacing: 0.2,
   },
   logoutButton: {
     flexDirection: "row",
