@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 const logoLocal = require("../../assets/Logo.png");
 const profileLocal = require("../../assets/Profile.jpg");
+const cateringImg = require("../../assets/images/HealthyFood.webp");
 import {
   View,
   Text,
   Image,
   TouchableOpacity,
+  Pressable,
   ScrollView,
   Animated,
   StyleSheet,
@@ -17,6 +19,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import CheckScreen from "./check";
 import ProfileScreen from "./profile";
+import CateringScreen from "./catering";
+import HistoryScreen from "./history";
 
 const { width } = Dimensions.get("window");
 
@@ -226,7 +230,7 @@ function PulsingHeart() {
 }
 
 // HomeScreen
-type TabName = "home" | "check" | "history" | "profile";
+type TabName = "home" | "check" | "catering" | "history" | "profile";
 
 export default function HomeScreen() {
   const { width: screenWidth } = useWindowDimensions();
@@ -235,12 +239,37 @@ export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState<TabName>("home");
   const [waterValue, setWaterValue] = useState(1.5);
   const [checkState, setCheckState] = useState<"idle" | "calibrating" | "ready">("idle");
+  const [cateringScale] = useState(() => new Animated.Value(1));
+  const [plateSpin] = useState(() => new Animated.Value(0));
   const tabs: { name: TabName; icon: string; label: string }[] = [
     { name: "home", icon: "home", label: "Home" },
     { name: "check", icon: "bar-chart", label: "Check" },
+    { name: "catering", icon: "restaurant", label: "Re:vit Catering" },
     { name: "history", icon: "calendar-today", label: "History" },
     { name: "profile", icon: "person-outline", label: "Profile" },
   ];
+
+  const handleCateringIn = () => {
+    Animated.spring(cateringScale, { toValue: 0.98, useNativeDriver: true }).start();
+    plateSpin.stopAnimation((deg) => {
+      Animated.sequence([
+        Animated.timing(plateSpin, { toValue: deg + 20, duration: 450, easing: Easing.in(Easing.quad), useNativeDriver: true }),
+        Animated.timing(plateSpin, { toValue: deg + 3600, duration: 45000, easing: Easing.linear, useNativeDriver: true }),
+      ]).start();
+    });
+  };
+
+  const handleCateringOut = () => {
+    Animated.spring(cateringScale, { toValue: 1, useNativeDriver: true }).start();
+    plateSpin.stopAnimation((deg) => {
+      Animated.timing(plateSpin, { toValue: deg + 20, duration: 750, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+    });
+  };
+
+  const plateRotate = plateSpin.interpolate({
+    inputRange: [0, 360],
+    outputRange: ["0deg", "360deg"],
+  });
 
   const handleTabPress = (tab: TabName) => {
     setActiveTab(tab);
@@ -260,6 +289,10 @@ export default function HomeScreen() {
 
       {activeTab === "check" ? (
         <CheckScreen />
+      ) : activeTab === "catering" ? (
+        <CateringScreen />
+      ) : activeTab === "history" ? (
+        <HistoryScreen />
       ) : activeTab === "profile" ? (
         <ProfileScreen onEditBmi={() => setActiveTab("check")} />
       ) : (
@@ -347,6 +380,44 @@ export default function HomeScreen() {
             </View>
           </FadeSlideIn>
 
+          {/* Catering card */}
+          <FadeSlideIn delay={380}>
+            <Animated.View style={{ transform: [{ scale: cateringScale }] }}>
+              <Pressable
+                style={styles.cateringBanner}
+                onHoverIn={handleCateringIn}
+                onHoverOut={handleCateringOut}
+                onPressIn={handleCateringIn}
+                onPressOut={handleCateringOut}
+                onPress={() => setActiveTab("catering")}
+              >
+                <View style={styles.cateringBgCircleTop} pointerEvents="none" />
+                <View style={styles.cateringPlateHaloOuter} pointerEvents="none" />
+                <View style={styles.cateringPlateHaloInner} pointerEvents="none" />
+                <MaterialIcons name="eco" size={42} color="rgba(217, 119, 6, 0.11)" style={styles.cateringLeaf1} pointerEvents="none" />
+                <MaterialIcons name="eco" size={40} color="rgba(217, 119, 6, 0.1)" style={styles.cateringLeaf2} pointerEvents="none" />
+                <MaterialIcons name="eco" size={56} color="rgba(217, 119, 6, 0.12)" style={styles.cateringLeaf3} pointerEvents="none" />
+
+                <View style={styles.cateringLeft}>
+                  <Text style={styles.cateringTitle}>{"Mau makan sehat\ntapi tetap enak?"}</Text>
+                  <Text style={styles.cateringDesc}>
+                    Menu rendah kolesterol & kalori terukur, diracik khusus untuk jantungmu.
+                  </Text>
+                  <View style={styles.cateringBtn}>
+                    <Text style={styles.cateringBtnText}>Pesan Sekarang</Text>
+                    <MaterialIcons name="arrow-forward" size={14} color="#ffffff" />
+                  </View>
+                </View>
+
+                <View style={styles.cateringPlateWrapper} pointerEvents="none">
+                  <Animated.View style={[styles.cateringPlateCircle, { transform: [{ rotate: plateRotate }] }]}>
+                    <Image source={cateringImg} style={styles.cateringPlateImage} resizeMode="cover" />
+                  </Animated.View>
+                </View>
+              </Pressable>
+            </Animated.View>
+          </FadeSlideIn>
+
           {/* Health Tips */}
           <FadeSlideIn delay={440}>
             <View style={styles.sectionHeader}>
@@ -399,7 +470,10 @@ export default function HomeScreen() {
                   size={24}
                   color={isActive ? "#006a43" : "#8c9b91"}
                 />
-                <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
+                <Text
+                  style={[styles.tabLabel, isActive && styles.tabLabelActive]}
+                  numberOfLines={1}
+                >
                   {tab.label}
                 </Text>
               </TouchableOpacity>
@@ -547,6 +621,54 @@ const styles = StyleSheet.create({
   progressFill: { height: "100%", backgroundColor: "#006a43", borderRadius: 3 },
   vitalNote: { fontSize: 11, color: "#3e4941", marginTop: 2 },
 
+  // Catering
+  cateringBanner: {
+    flexDirection: "row", alignItems: "center",
+    backgroundColor: "#fef3c7", borderRadius: 22,
+    paddingVertical: 20, paddingLeft: 20, paddingRight: 118,
+    marginBottom: 24, overflow: "hidden", position: "relative",
+    borderWidth: 1, borderColor: "#fcd34d",
+    shadowColor: "#b45309", shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08, shadowRadius: 12, elevation: 3,
+  },
+  cateringBgCircleTop: {
+    position: "absolute", top: -60, left: -40,
+    width: 145, height: 145, borderRadius: 73,
+    backgroundColor: "rgba(251, 191, 36, 0.15)",
+  },
+  cateringPlateHaloOuter: {
+    position: "absolute", right: -118, top: -42,
+    width: 248, height: 248, borderRadius: 124,
+    backgroundColor: "rgba(251, 191, 36, 0.25)",
+  },
+  cateringPlateHaloInner: {
+    position: "absolute", right: -105, top: -29,
+    width: 222, height: 222, borderRadius: 111,
+    backgroundColor: "rgba(245, 158, 11, 0.22)",
+  },
+  cateringLeaf1: { position: "absolute", top: -6, left: 195, transform: [{ rotate: "155deg" }] },
+  cateringLeaf2: { position: "absolute", bottom: -10, left: -6, transform: [{ rotate: "35deg" }] },
+  cateringLeaf3: { position: "absolute", bottom: -8, left: 155, transform: [{ rotate: "-18deg" }] },
+  cateringLeft: { flex: 1, gap: 6, zIndex: 2 },
+  cateringTitle: { fontSize: 18, fontWeight: "800", color: "#131e1a", lineHeight: 23, letterSpacing: -0.3 },
+  cateringDesc: { fontSize: 12, color: "#451a03", lineHeight: 17 },
+  cateringBtn: {
+    flexDirection: "row", alignItems: "center", alignSelf: "flex-start",
+    backgroundColor: "#006a43", paddingHorizontal: 14, paddingVertical: 9,
+    borderRadius: 12, gap: 6, marginTop: 6,
+  },
+  cateringBtnText: { fontSize: 12, fontWeight: "700", color: "#ffffff" },
+  cateringPlateWrapper: {
+    position: "absolute", right: -92, top: -18, bottom: -18,
+    justifyContent: "center", alignItems: "center",
+  },
+  cateringPlateCircle: {
+    width: 196, height: 196, borderRadius: 98, overflow: "hidden",
+    backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center",
+    borderWidth: 3, borderColor: "#ffffff",
+  },
+  cateringPlateImage: { width: 246, height: 246 },
+
   // Tips
   tipDots: { flexDirection: "row", alignItems: "center", gap: 4 },
   tipDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#d0ddd6" },
@@ -593,11 +715,11 @@ const styles = StyleSheet.create({
   },
   bottomNavContainer: {
     flexDirection: "row", width: "100%", maxWidth: 1024,
-    alignItems: "center", justifyContent: "space-around",
+    paddingHorizontal: 22, alignItems: "center", justifyContent: "space-between",
   },
   tabItem: {
-    flex: 1, alignItems: "center", justifyContent: "center",
-    paddingTop: 8, paddingBottom: 4, gap: 2,
+    alignItems: "center", justifyContent: "center",
+    paddingTop: 8, paddingBottom: 4, paddingHorizontal: 4, gap: 2,
   },
   tabLabel: { fontSize: 11, fontWeight: "500", color: "#8c9b91", letterSpacing: 0.2 },
   tabLabelActive: { color: "#006a43", fontWeight: "700" },
