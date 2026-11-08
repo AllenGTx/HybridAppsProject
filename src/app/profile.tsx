@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   Image,
   TouchableOpacity,
   ScrollView,
+  Animated,
+  Easing,
   StyleSheet,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -13,14 +15,50 @@ import Svg, { Defs, LinearGradient, Stop, Path, Line } from "react-native-svg";
 
 const profileImg = require("../../assets/Profile.jpg");
 
+function FadeSlideIn({
+  children,
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  delay?: number;
+}) {
+  const [opacity] = useState(() => new Animated.Value(0));
+  const [translateY] = useState(() => new Animated.Value(14));
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 420,
+        delay,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 420,
+        delay,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [delay, opacity, translateY]);
+
+  return (
+    <Animated.View style={{ opacity, transform: [{ translateY }] }}>
+      {children}
+    </Animated.View>
+  );
+}
+
 const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN"];
 const Y_LABELS = [200, 150, 100, 50, 0];
 
 const BMI_CATEGORIES = [
-  { label: "Underweight", range: "Below 18.5", color: "#38bdf8", active: false },
-  { label: "Normal", range: "18.5 to 24.9", color: "#10b981", active: true },
-  { label: "Overweight", range: "25.0 to 29.9", color: "#f59e0b", active: false },
-  { label: "Obesity", range: "30 or greater", color: "#ef4444", active: false },
+  { label: "Underweight", range: "Below 18.5", color: "#38bdf8", domeColor: "#0284c7", bgColor: "#e0f2fe", angle: -68, sampleBmi: "17.2" },
+  { label: "Normal", range: "18.5 to 24.9", color: "#10b981", domeColor: "#059669", bgColor: "#ecfdf5", angle: -24, sampleBmi: "23.0" },
+  { label: "Overweight", range: "25.0 to 29.9", color: "#f59e0b", domeColor: "#d97706", bgColor: "#fef3c7", angle: 24, sampleBmi: "27.4" },
+  { label: "Obesity", range: "30 or greater", color: "#ef4444", domeColor: "#dc2626", bgColor: "#fee2e2", angle: 68, sampleBmi: "31.8" },
 ];
 
 export default function ProfileScreen({
@@ -28,6 +66,97 @@ export default function ProfileScreen({
 }: {
   onEditBmi?: () => void;
 }) {
+  const [cardScale] = useState(() => new Animated.Value(1));
+  const [chartWave] = useState(() => new Animated.Value(0));
+  const [peakScale] = useState(() => new Animated.Value(0));
+  const [selectedBmiIndex, setSelectedBmiIndex] = useState(1);
+  const [needleAnim] = useState(() => new Animated.Value(-82));
+  const [chartPlayed, setChartPlayed] = useState(false);
+  const [bmiPlayed, setBmiPlayed] = useState(false);
+
+  const currentBmi = BMI_CATEGORIES[selectedBmiIndex];
+
+  const handleScroll = (e: any) => {
+    const scrollY = e.nativeEvent.contentOffset.y;
+
+    if (scrollY > 110 && !chartPlayed) {
+      setChartPlayed(true);
+      Animated.sequence([
+        Animated.spring(chartWave, {
+          toValue: 1,
+          friction: 5,
+          tension: 35,
+          useNativeDriver: true,
+        }),
+        Animated.spring(peakScale, {
+          toValue: 1,
+          friction: 6,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+
+    if (scrollY > 360 && !bmiPlayed) {
+      setBmiPlayed(true);
+      Animated.sequence([
+        Animated.timing(needleAnim, {
+          toValue: 35,
+          duration: 500,
+          easing: Easing.inOut(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.spring(needleAnim, {
+          toValue: BMI_CATEGORIES[selectedBmiIndex].angle,
+          friction: 5,
+          tension: 40,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  };
+
+  const handleSelectBmiCategory = (index: number) => {
+    setSelectedBmiIndex(index);
+    setBmiPlayed(true);
+    Animated.spring(needleAnim, {
+      toValue: BMI_CATEGORIES[index].angle,
+      friction: 5,
+      tension: 45,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const needleRotate = needleAnim.interpolate({
+    inputRange: [-90, 90],
+    outputRange: ["-90deg", "90deg"],
+  });
+
+  const waveTranslateY = chartWave.interpolate({
+    inputRange: [0, 1],
+    outputRange: [95, 0],
+  });
+
+  const waveScaleY = chartWave.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.15, 1],
+  });
+
+  const handleCardPressIn = () => {
+    Animated.spring(cardScale, {
+      toValue: 0.97,
+      useNativeDriver: true,
+      friction: 7,
+    }).start();
+  };
+
+  const handleCardPressOut = () => {
+    Animated.spring(cardScale, {
+      toValue: 1,
+      useNativeDriver: true,
+      friction: 7,
+    }).start();
+  };
+
   const handleLogout = () => {
     router.replace("/welcome");
   };
@@ -45,209 +174,263 @@ export default function ProfileScreen({
       style={styles.container}
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
+      onScroll={handleScroll}
+      scrollEventThrottle={16}
     >
-      <View style={styles.topBar}>
-        <View style={styles.topBarActions}>
-          <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
-            <MaterialIcons name="mail-outline" size={20} color="#1e293b" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
-            <MaterialIcons name="settings" size={20} color="#1e293b" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.profileHeader}>
-        <View style={styles.userTextInfo}>
-          <Text style={styles.userName}>Alex Pratama</Text>
-          <Text style={styles.userEmail}>alex.pratama@gmail.com</Text>
-          <Text style={styles.joinText}>Joined Re:Vitalize for 12 days</Text>
-        </View>
-        <View style={styles.avatarContainer}>
-          <Image source={profileImg} style={styles.avatar} resizeMode="cover" />
-        </View>
-      </View>
-
-      <TouchableOpacity style={styles.membershipCard} activeOpacity={0.9}>
-        <View style={styles.glossHighlightTop} />
-        <View style={styles.glossCurveRight} />
-        <View style={styles.membershipContent}>
-          <View>
-            <Text style={styles.membershipTitle}>
-              Vitalize<Text style={styles.membershipPlus}>Plus+</Text>
-            </Text>
-            <Text style={styles.membershipSub}>Active Member • Free Tier</Text>
-          </View>
-          <View style={styles.membershipBadge}>
-            <MaterialIcons name="auto-awesome" size={16} color="#aef1cd" />
-          </View>
-        </View>
-      </TouchableOpacity>
-
-      <View style={styles.medicalCard}>
-        <View style={styles.medicalHeader}>
-          <MaterialIcons name="medical-services" size={18} color="#dc2626" />
-          <Text style={styles.medicalTitle}>Medical ID</Text>
-        </View>
-
-        <View style={styles.bioStrip}>
-          <View style={styles.bioItem}>
-            <Text style={styles.bioLabel}>Gender</Text>
-            <Text style={styles.bioValue}>Male</Text>
-          </View>
-          <View style={styles.bioDivider} />
-          <View style={styles.bioItem}>
-            <Text style={styles.bioLabel}>Age</Text>
-            <Text style={styles.bioValue}>
-              30-34 <Text style={styles.bioUnit}>yrs</Text>
-            </Text>
-          </View>
-          <View style={styles.bioDivider} />
-          <View style={styles.bioItem}>
-            <Text style={styles.bioLabel}>Height</Text>
-            <Text style={styles.bioValue}>
-              172 <Text style={styles.bioUnit}>cm</Text>
-            </Text>
-          </View>
-          <View style={styles.bioDivider} />
-          <View style={styles.bioItem}>
-            <Text style={styles.bioLabel}>Weight</Text>
-            <Text style={styles.bioValue}>
-              68 <Text style={styles.bioUnit}>kg</Text>
-            </Text>
+      <FadeSlideIn delay={60}>
+        <View style={styles.topBar}>
+          <View style={styles.topBarActions}>
+            <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
+              <MaterialIcons name="mail-outline" size={20} color="#1e293b" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton} activeOpacity={0.7}>
+              <MaterialIcons name="settings" size={20} color="#1e293b" />
+            </TouchableOpacity>
           </View>
         </View>
 
-        <View style={styles.medicalRow}>
-          <Text style={styles.medicalLabel}>Blood Type</Text>
-          <Text style={styles.medicalValue}>B</Text>
-        </View>
-        <View style={styles.medicalRow}>
-          <Text style={styles.medicalLabel}>Blood Pressure</Text>
-          <Text style={styles.medicalValue}>
-            118/76 <Text style={styles.medicalUnit}>mmHg</Text>
-          </Text>
-        </View>
-        <View style={styles.medicalRow}>
-          <Text style={styles.medicalLabel}>HDL Cholesterol</Text>
-          <Text style={styles.medicalValue}>
-            58 <Text style={styles.medicalUnit}>mg/dL</Text>
-          </Text>
-        </View>
-        <View style={styles.medicalRow}>
-          <Text style={styles.medicalLabel}>LDL Cholesterol</Text>
-          <Text style={styles.medicalValue}>
-            94 <Text style={styles.medicalUnit}>mg/dL</Text>
-          </Text>
-        </View>
-        <View style={styles.medicalRow}>
-          <Text style={styles.medicalLabel}>Smoking</Text>
-          <Text style={styles.medicalValue}>Never Smoked</Text>
-        </View>
-        <View style={styles.medicalRow}>
-          <Text style={styles.medicalLabel}>Conditions</Text>
-          <Text style={styles.medicalValue}>None</Text>
-        </View>
-
-        <TouchableOpacity style={styles.emergencyRow} activeOpacity={0.6}>
-          <View>
-            <Text style={styles.medicalLabel}>Emergency Contact</Text>
-            <Text style={styles.emergencyNumber}>+62 812-3456-7890</Text>
+        <View style={styles.profileHeader}>
+          <View style={styles.userTextInfo}>
+            <Text style={styles.userName}>Alex Pratama</Text>
+            <Text style={styles.userEmail}>alex.pratama@gmail.com</Text>
+            <Text style={styles.joinText}>Joined Re:Vitalize for 12 days</Text>
           </View>
-          <View style={styles.emergencyRight}>
-            <Text style={styles.emergencyRelation}>Family</Text>
-            <MaterialIcons name="chevron-right" size={20} color="#94a3b8" />
+          <View style={styles.avatarContainer}>
+            <Image source={profileImg} style={styles.avatar} resizeMode="cover" />
           </View>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.performanceCard}>
-        <View style={styles.performanceHeader}>
-          <Text style={styles.performanceTitle}>Healthy Living Score</Text>
-          <Text style={styles.performanceSubtitle}>
-            Weekly active exercise vs 150 min cardio target
-          </Text>
         </View>
+      </FadeSlideIn>
 
-        <View style={styles.metricsRow}>
-          <Text style={styles.metricLabel}>
-            Average <Text style={styles.metricValueGreen}>157/week</Text>
-          </Text>
-          <Text style={styles.metricLabel}>
-            Target Reach <Text style={styles.metricValueWarm}>67%</Text>
-          </Text>
-        </View>
-
-        <View style={styles.chartRow}>
-          <View style={styles.yAxisColumn}>
-            {Y_LABELS.map((val) => (
-              <Text key={val} style={styles.yAxisLabel}>
-                {val}
-              </Text>
-            ))}
-          </View>
-
-          <View style={styles.plotArea}>
-            <View style={styles.peakTooltip}>
-              <Text style={styles.peakTooltipText}>192 min</Text>
+      <FadeSlideIn delay={140}>
+        <Animated.View style={{ transform: [{ scale: cardScale }] }}>
+          <TouchableOpacity
+            style={styles.membershipCard}
+            activeOpacity={0.95}
+            onPressIn={handleCardPressIn}
+            onPressOut={handleCardPressOut}
+          >
+            <View style={styles.glossHighlightTop} />
+            <View style={styles.glossCurveRight} />
+            <View style={styles.membershipContent}>
+              <View>
+                <Text style={styles.membershipTitle}>
+                  Vitalize<Text style={styles.membershipPlus}>Plus+</Text>
+                </Text>
+                <Text style={styles.membershipSub}>Active Member • Free Tier</Text>
+              </View>
+              <View style={styles.membershipBadge}>
+                <MaterialIcons name="auto-awesome" size={16} color="#aef1cd" />
+              </View>
             </View>
+          </TouchableOpacity>
+        </Animated.View>
+      </FadeSlideIn>
 
-            <View style={styles.peakDot} />
+      <FadeSlideIn delay={220}>
+        <View style={styles.medicalCard}>
+          <View style={styles.medicalHeader}>
+            <MaterialIcons name="medical-services" size={18} color="#dc2626" />
+            <Text style={styles.medicalTitle}>Medical ID</Text>
+          </View>
 
-            <Svg
-              width="100%"
-              height={154}
-              viewBox="0 0 300 154"
-              preserveAspectRatio="none"
-            >
-              <Defs>
-                <LinearGradient id="singleWave" x1="0" y1="0" x2="0" y2="1">
-                  <Stop offset="0%" stopColor="#059669" stopOpacity="0.46" />
-                  <Stop offset="72%" stopColor="#34d399" stopOpacity="0.14" />
-                  <Stop offset="100%" stopColor="#ecfdf5" stopOpacity="0.0" />
-                </LinearGradient>
-              </Defs>
+          <View style={styles.bioStrip}>
+            <View style={styles.bioItem}>
+              <Text style={styles.bioLabel}>Gender</Text>
+              <Text style={styles.bioValue}>Male</Text>
+            </View>
+            <View style={styles.bioDivider} />
+            <View style={styles.bioItem}>
+              <Text style={styles.bioLabel}>Age</Text>
+              <Text style={styles.bioValue}>
+                30-34 <Text style={styles.bioUnit}>yrs</Text>
+              </Text>
+            </View>
+            <View style={styles.bioDivider} />
+            <View style={styles.bioItem}>
+              <Text style={styles.bioLabel}>Height</Text>
+              <Text style={styles.bioValue}>
+                172 <Text style={styles.bioUnit}>cm</Text>
+              </Text>
+            </View>
+            <View style={styles.bioDivider} />
+            <View style={styles.bioItem}>
+              <Text style={styles.bioLabel}>Weight</Text>
+              <Text style={styles.bioValue}>
+                68 <Text style={styles.bioUnit}>kg</Text>
+              </Text>
+            </View>
+          </View>
 
-              <Line
-                x1="0"
-                y1="56"
-                x2="300"
-                y2="56"
-                stroke="#cbd5e1"
-                strokeWidth="1"
-                strokeDasharray="4 4"
-              />
+          <View style={styles.medicalRow}>
+            <Text style={styles.medicalLabel}>Blood Type</Text>
+            <Text style={styles.medicalValue}>B</Text>
+          </View>
+          <View style={styles.medicalRow}>
+            <Text style={styles.medicalLabel}>Blood Pressure</Text>
+            <Text style={styles.medicalValue}>
+              118/76 <Text style={styles.medicalUnit}>mmHg</Text>
+            </Text>
+          </View>
+          <View style={styles.medicalRow}>
+            <Text style={styles.medicalLabel}>HDL Cholesterol</Text>
+            <Text style={styles.medicalValue}>
+              58 <Text style={styles.medicalUnit}>mg/dL</Text>
+            </Text>
+          </View>
+          <View style={styles.medicalRow}>
+            <Text style={styles.medicalLabel}>LDL Cholesterol</Text>
+            <Text style={styles.medicalValue}>
+              94 <Text style={styles.medicalUnit}>mg/dL</Text>
+            </Text>
+          </View>
+          <View style={styles.medicalRow}>
+            <Text style={styles.medicalLabel}>Smoking</Text>
+            <Text style={styles.medicalValue}>Never Smoked</Text>
+          </View>
+          <View style={styles.medicalRow}>
+            <Text style={styles.medicalLabel}>Conditions</Text>
+            <Text style={styles.medicalValue}>None</Text>
+          </View>
 
-              <Path
-                d="M 0 66 C 30 66, 30 76, 60 76 C 90 76, 90 49, 120 49 C 150 49, 150 29, 180 29 C 210 29, 210 54, 240 54 C 270 54, 270 38, 300 38 L 300 154 L 0 154 Z"
-                fill="url(#singleWave)"
-              />
-              <Path
-                d="M 0 66 C 30 66, 30 76, 60 76 C 90 76, 90 49, 120 49 C 150 49, 150 29, 180 29 C 210 29, 210 54, 240 54 C 270 54, 270 38, 300 38"
-                fill="none"
-                stroke="#047857"
-                strokeWidth="2.5"
-              />
-            </Svg>
+          <TouchableOpacity style={styles.emergencyRow} activeOpacity={0.6}>
+            <View>
+              <Text style={styles.medicalLabel}>Emergency Contact</Text>
+              <Text style={styles.emergencyNumber}>+62 812-3456-7890</Text>
+            </View>
+            <View style={styles.emergencyRight}>
+              <Text style={styles.emergencyRelation}>Family</Text>
+              <MaterialIcons name="chevron-right" size={20} color="#94a3b8" />
+            </View>
+          </TouchableOpacity>
+        </View>
+      </FadeSlideIn>
 
-            <View style={styles.xAxisRow}>
-              {MONTHS.map((month) => (
-                <Text
-                  key={month}
-                  style={[
-                    styles.xAxisLabel,
-                    month === "APR" && styles.xAxisLabelActive,
-                  ]}
-                >
-                  {month}
+      <FadeSlideIn delay={280}>
+        <View style={styles.performanceCard}>
+          <View style={styles.performanceHeader}>
+            <Text style={styles.performanceTitle}>Healthy Living Score</Text>
+            <Text style={styles.performanceSubtitle}>
+              Weekly active exercise vs 150 min cardio target
+            </Text>
+          </View>
+
+          <View style={styles.metricsRow}>
+            <Text style={styles.metricLabel}>
+              Average <Text style={styles.metricValueGreen}>157/week</Text>
+            </Text>
+            <Text style={styles.metricLabel}>
+              Target Reach <Text style={styles.metricValueWarm}>67%</Text>
+            </Text>
+          </View>
+
+          <View style={styles.chartRow}>
+            <View style={styles.yAxisColumn}>
+              {Y_LABELS.map((val) => (
+                <Text key={val} style={styles.yAxisLabel}>
+                  {val}
                 </Text>
               ))}
             </View>
+
+            <View style={styles.plotArea}>
+              <Animated.View
+                style={[
+                  styles.peakTooltip,
+                  {
+                    opacity: peakScale,
+                    transform: [{ scale: peakScale }],
+                  },
+                ]}
+              >
+                <Text style={styles.peakTooltipText}>192 min</Text>
+              </Animated.View>
+
+              <Animated.View
+                style={[
+                  styles.peakDot,
+                  {
+                    opacity: peakScale,
+                    transform: [{ scale: peakScale }],
+                  },
+                ]}
+              />
+
+              <View style={styles.svgContainer}>
+                <Svg
+                  width="100%"
+                  height={154}
+                  viewBox="0 0 300 154"
+                  preserveAspectRatio="none"
+                  style={styles.svgGridLayer}
+                >
+                  <Line
+                    x1="0"
+                    y1="56"
+                    x2="300"
+                    y2="56"
+                    stroke="#cbd5e1"
+                    strokeWidth="1"
+                    strokeDasharray="4 4"
+                  />
+                </Svg>
+
+                <Animated.View
+                  style={{
+                    opacity: chartWave,
+                    transform: [
+                      { translateY: waveTranslateY },
+                      { scaleY: waveScaleY },
+                    ],
+                  }}
+                >
+                  <Svg
+                    width="100%"
+                    height={154}
+                    viewBox="0 0 300 154"
+                    preserveAspectRatio="none"
+                  >
+                    <Defs>
+                      <LinearGradient id="singleWave" x1="0" y1="0" x2="0" y2="1">
+                        <Stop offset="0%" stopColor="#059669" stopOpacity="0.46" />
+                        <Stop offset="72%" stopColor="#34d399" stopOpacity="0.14" />
+                        <Stop offset="100%" stopColor="#ecfdf5" stopOpacity="0.0" />
+                      </LinearGradient>
+                    </Defs>
+
+                    <Path
+                      d="M 0 66 C 30 66, 30 76, 60 76 C 90 76, 90 49, 120 49 C 150 49, 150 29, 180 29 C 210 29, 210 54, 240 54 C 270 54, 270 38, 300 38 L 300 154 L 0 154 Z"
+                      fill="url(#singleWave)"
+                    />
+                    <Path
+                      d="M 0 66 C 30 66, 30 76, 60 76 C 90 76, 90 49, 120 49 C 150 49, 150 29, 180 29 C 210 29, 210 54, 240 54 C 270 54, 270 38, 300 38"
+                      fill="none"
+                      stroke="#047857"
+                      strokeWidth="2.5"
+                    />
+                  </Svg>
+                </Animated.View>
+              </View>
+
+              <View style={styles.xAxisRow}>
+                {MONTHS.map((month) => (
+                  <Text
+                    key={month}
+                    style={[
+                      styles.xAxisLabel,
+                      month === "APR" && styles.xAxisLabelActive,
+                    ]}
+                  >
+                    {month}
+                  </Text>
+                ))}
+              </View>
+            </View>
           </View>
         </View>
-      </View>
+      </FadeSlideIn>
 
-      <View style={styles.bmiCard}>
+      <FadeSlideIn delay={340}>
+        <View style={styles.bmiCard}>
         <View style={styles.bmiHeaderRow}>
           <Text style={styles.bmiTitle}>Body Mass Index</Text>
           <Text style={styles.bmiSubtitle}>
@@ -262,39 +445,77 @@ export default function ProfileScreen({
                 d="M 24 111 A 96 96 0 0 1 45 58"
                 fill="none"
                 stroke="#38bdf8"
-                strokeWidth="9"
+                strokeWidth={selectedBmiIndex === 0 ? "11" : "8"}
+                strokeOpacity={selectedBmiIndex === 0 ? 1 : 0.45}
                 strokeLinecap="round"
               />
               <Path
                 d="M 60 43 A 96 96 0 0 1 110 23"
                 fill="none"
                 stroke="#10b981"
-                strokeWidth="9"
+                strokeWidth={selectedBmiIndex === 1 ? "11" : "8"}
+                strokeOpacity={selectedBmiIndex === 1 ? 1 : 0.45}
                 strokeLinecap="round"
               />
               <Path
                 d="M 130 23 A 96 96 0 0 1 180 43"
                 fill="none"
                 stroke="#f59e0b"
-                strokeWidth="9"
+                strokeWidth={selectedBmiIndex === 2 ? "11" : "8"}
+                strokeOpacity={selectedBmiIndex === 2 ? 1 : 0.45}
                 strokeLinecap="round"
               />
               <Path
                 d="M 195 58 A 96 96 0 0 1 216 111"
                 fill="none"
                 stroke="#ef4444"
-                strokeWidth="9"
+                strokeWidth={selectedBmiIndex === 3 ? "11" : "8"}
+                strokeOpacity={selectedBmiIndex === 3 ? 1 : 0.45}
                 strokeLinecap="round"
               />
               <Path
                 d="M 44 118 A 76 76 0 0 1 196 118 Z"
-                fill="#059669"
+                fill={currentBmi.domeColor}
               />
             </Svg>
 
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                styles.bmiNeedleWheel,
+                { transform: [{ rotate: needleRotate }] },
+              ]}
+            >
+              <View
+                style={[
+                  styles.bmiPointerBadge,
+                  { borderColor: currentBmi.color },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.bmiPointerDot,
+                    { backgroundColor: currentBmi.color },
+                  ]}
+                />
+                <View
+                  style={[
+                    styles.bmiPointerStem,
+                    { backgroundColor: currentBmi.color },
+                  ]}
+                />
+                <MaterialIcons
+                  name="arrow-drop-down"
+                  size={24}
+                  color={currentBmi.color}
+                  style={styles.bmiPointerIcon}
+                />
+              </View>
+            </Animated.View>
+
             <View style={styles.bmiGaugeCenter}>
-              <Text style={styles.bmiGaugeValue}>23.0</Text>
-              <Text style={styles.bmiGaugeLabel}>Normal</Text>
+              <Text style={styles.bmiGaugeValue}>{currentBmi.sampleBmi}</Text>
+              <Text style={styles.bmiGaugeLabel}>{currentBmi.label}</Text>
             </View>
           </View>
         </View>
@@ -302,42 +523,65 @@ export default function ProfileScreen({
         <View style={styles.bmiDetailBox}>
           <Text style={styles.bmiSummaryText}>
             Based on the information entered, your body mass index (BMI) is{" "}
-            <Text style={styles.bmiSummaryBold}>23.0</Text>, placing your weight
-            in the <Text style={styles.bmiSummaryBold}>Normal</Text> category
-            for adults of your height.
+            <Text style={styles.bmiSummaryBold}>{currentBmi.sampleBmi}</Text>,
+            placing your weight in the{" "}
+            <Text
+              style={[
+                styles.bmiSummaryBold,
+                { color: currentBmi.domeColor },
+              ]}
+            >
+              {currentBmi.label}
+            </Text>{" "}
+            category for adults of your height.
           </Text>
 
           <View style={styles.bmiTable}>
-            {BMI_CATEGORIES.map((item, index) => (
-              <View
-                key={item.label}
-                style={[
-                  styles.bmiTableRow,
-                  item.active && styles.bmiTableRowActive,
-                  index === BMI_CATEGORIES.length - 1 && styles.bmiTableRowLast,
-                ]}
-              >
-                <Text
+            {BMI_CATEGORIES.map((item, index) => {
+              const isActive = index === selectedBmiIndex;
+              return (
+                <TouchableOpacity
+                  key={item.label}
+                  activeOpacity={0.75}
+                  onPress={() => handleSelectBmiCategory(index)}
                   style={[
-                    styles.bmiRowCategory,
-                    item.active && styles.bmiRowTextActive,
+                    styles.bmiTableRow,
+                    isActive && { backgroundColor: item.bgColor },
+                    index === BMI_CATEGORIES.length - 1 &&
+                      styles.bmiTableRowLast,
                   ]}
                 >
-                  {item.label}
-                </Text>
-                <Text
-                  style={[
-                    styles.bmiRowRange,
-                    item.active && styles.bmiRowTextActive,
-                  ]}
-                >
-                  {item.range}
-                </Text>
-                <View
-                  style={[styles.bmiColorBar, { backgroundColor: item.color }]}
-                />
-              </View>
-            ))}
+                  <Text
+                    style={[
+                      styles.bmiRowCategory,
+                      isActive && {
+                        fontWeight: "700",
+                        color: item.domeColor,
+                      },
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.bmiRowRange,
+                      isActive && {
+                        fontWeight: "700",
+                        color: item.domeColor,
+                      },
+                    ]}
+                  >
+                    {item.range}
+                  </Text>
+                  <View
+                    style={[
+                      styles.bmiColorBar,
+                      { backgroundColor: item.color },
+                    ]}
+                  />
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
@@ -349,16 +593,19 @@ export default function ProfileScreen({
           <MaterialIcons name="tune" size={17} color="#ffffff" />
           <Text style={styles.bmiEditButtonText}>Edit Information</Text>
         </TouchableOpacity>
-      </View>
+        </View>
+      </FadeSlideIn>
 
-      <TouchableOpacity
-        style={styles.logoutButton}
-        activeOpacity={0.8}
-        onPress={handleLogout}
-      >
-        <MaterialIcons name="logout" size={19} color="#be123c" />
-        <Text style={styles.logoutButtonText}>Log Out</Text>
-      </TouchableOpacity>
+      <FadeSlideIn delay={400}>
+        <TouchableOpacity
+          style={styles.logoutButton}
+          activeOpacity={0.8}
+          onPress={handleLogout}
+        >
+          <MaterialIcons name="logout" size={19} color="#be123c" />
+          <Text style={styles.logoutButtonText}>Log Out</Text>
+        </TouchableOpacity>
+      </FadeSlideIn>
     </ScrollView>
   );
 }
@@ -655,6 +902,17 @@ const styles = StyleSheet.create({
     flex: 1,
     position: "relative",
   },
+  svgContainer: {
+    position: "relative",
+    overflow: "hidden",
+    height: 154,
+  },
+  svgGridLayer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+  },
   peakTooltip: {
     position: "absolute",
     left: "60%",
@@ -738,6 +996,42 @@ const styles = StyleSheet.create({
     position: "relative",
     alignItems: "center",
     justifyContent: "flex-end",
+    overflow: "hidden",
+  },
+  bmiNeedleWheel: {
+    position: "absolute",
+    width: 196,
+    height: 196,
+    top: 20,
+    left: 22,
+    alignItems: "center",
+    justifyContent: "flex-start",
+  },
+  bmiPointerBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#ffffff",
+    borderWidth: 3.5,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: -7,
+  },
+  bmiPointerDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+  },
+  bmiPointerStem: {
+    position: "absolute",
+    bottom: -12,
+    width: 3,
+    height: 10,
+    borderRadius: 1.5,
+  },
+  bmiPointerIcon: {
+    position: "absolute",
+    bottom: -24,
   },
   bmiGaugeCenter: {
     position: "absolute",
