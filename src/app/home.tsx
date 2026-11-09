@@ -416,12 +416,12 @@ export default function HomeScreen() {
                 <MaterialIcons name="eco" size={56} color="rgba(217, 119, 6, 0.12)" style={styles.cateringLeaf3} pointerEvents="none" />
 
                 <View style={styles.cateringLeft}>
-                  <Text style={styles.cateringTitle}>{"Mau makan sehat\ntapi tetap enak?"}</Text>
+                  <Text style={styles.cateringTitle}>{"Looking for tasty food\nthat isn't bland?"}</Text>
                   <Text style={styles.cateringDesc}>
-                    Menu rendah kolesterol & kalori terukur, diracik khusus untuk jantungmu.
+                    Low cholesterol & portion-controlled meals, crafted for your heart.
                   </Text>
                   <View style={styles.cateringBtn}>
-                    <Text style={styles.cateringBtnText}>Pesan Sekarang</Text>
+                    <Text style={styles.cateringBtnText}>Order Now</Text>
                     <MaterialIcons name="arrow-forward" size={14} color="#ffffff" />
                   </View>
                 </View>
@@ -466,13 +466,13 @@ export default function HomeScreen() {
                 </View>
 
                 <View style={styles.consultRight}>
-                  <Text style={styles.consultTitle}>{"Bingung masalah jantung\n& kesehatan?"}</Text>
+                  <Text style={styles.consultTitle}>{"Concerned about your\nheart & health?"}</Text>
                   <Text style={styles.consultDesc}>
-                    Konsultasikan langsung dengan dokter ahli kami setiap saat.
+                    Consult directly with our medical specialists anytime.
                   </Text>
                   <View style={styles.consultBtn}>
                     <Text style={styles.consultBtnText}>
-                      Langganan Vitalize<Text style={styles.consultBtnPlus}>Plus+</Text>
+                      Subscribe to Vitalize<Text style={styles.consultBtnPlus}>Plus+</Text>
                     </Text>
                     <MaterialIcons name="arrow-forward" size={13} color="#ffffff" />
                   </View>
@@ -688,7 +688,7 @@ const styles = StyleSheet.create({
   cateringBanner: {
     flexDirection: "row", alignItems: "center",
     backgroundColor: "#fef3c7", borderRadius: 22,
-    paddingVertical: 20, paddingLeft: 20, paddingRight: 118,
+    paddingVertical: 20, paddingLeft: 20, paddingRight: 124,
     marginBottom: 16, overflow: "hidden", position: "relative",
     borderWidth: 1, borderColor: "#fcd34d",
     shadowColor: "#b45309", shadowOffset: { width: 0, height: 4 },
@@ -713,7 +713,7 @@ const styles = StyleSheet.create({
   cateringLeaf2: { position: "absolute", bottom: -10, left: -6, transform: [{ rotate: "35deg" }] },
   cateringLeaf3: { position: "absolute", bottom: -8, left: 155, transform: [{ rotate: "-18deg" }] },
   cateringLeft: { flex: 1, gap: 6, zIndex: 2 },
-  cateringTitle: { fontSize: 18, fontWeight: "800", color: "#131e1a", lineHeight: 23, letterSpacing: -0.3 },
+  cateringTitle: { fontSize: 17, fontWeight: "600", color: "#131e1a", lineHeight: 22, letterSpacing: -0.2 },
   cateringDesc: { fontSize: 12, color: "#451a03", lineHeight: 17 },
   cateringBtn: {
     flexDirection: "row", alignItems: "center", alignSelf: "flex-start",
