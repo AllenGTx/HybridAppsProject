@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 
-// Animasi transisi halus saat beralih antar langkah
 function FadeInView({
   children,
   delay = 0,
@@ -51,7 +50,6 @@ function FadeInView({
   );
 }
 
-// Opsi rentang usia pengguna
 const AGE_CATEGORIES = [
   "18-24",
   "25-29",
@@ -68,7 +66,6 @@ const AGE_CATEGORIES = [
   "80+",
 ];
 
-// Opsi riwayat merokok
 const SMOKING_OPTIONS = [
   { id: 0, label: "Never Smoked", desc: "Smoke-free lifestyle" },
   { id: 1, label: "Former Smoker", desc: "Quit completely" },
@@ -79,19 +76,16 @@ const SMOKING_OPTIONS = [
 export default function CheckScreen() {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
-  // State biometrik dasar
   const [name, setName] = useState("Alex Pratama");
   const [gender, setGender] = useState<"Male" | "Female">("Male");
   const [ageIndex, setAgeIndex] = useState(2);
   const [height, setHeight] = useState("172");
   const [weight, setWeight] = useState("68");
 
-  // State gaya hidup
   const [smoking, setSmoking] = useState(0);
   const [activity, setActivity] = useState<"Yes" | "No">("Yes");
   const [alcohol, setAlcohol] = useState<"Yes" | "No">("No");
 
-  // State riwayat medis klinis
   const [highBp, setHighBp] = useState<"Yes" | "No">("No");
   const [highChol, setHighChol] = useState<"Yes" | "No">("No");
   const [diabetes, setDiabetes] = useState<"Yes" | "No">("No");
@@ -103,7 +97,6 @@ export default function CheckScreen() {
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // Perhitungan otomatis BMI
   const heightMeters = parseFloat(height) / 100;
   const weightKg = parseFloat(weight);
   const bmiValue =
@@ -111,7 +104,6 @@ export default function CheckScreen() {
       ? (weightKg / (heightMeters * heightMeters)).toFixed(1)
       : "0.0";
 
-  // Penentuan kategori BMI berdasarkan standar WHO
   const getBmiStatus = (bmi: number) => {
     if (bmi < 18.5) return { label: "Underweight", color: "#d97706" };
     if (bmi < 25) return { label: "Optimal", color: "#006a43" };
@@ -121,7 +113,6 @@ export default function CheckScreen() {
 
   const bmiStatus = getBmiStatus(parseFloat(bmiValue));
 
-  // Simulasi kalkulasi penilaian risiko
   const handleAnalyze = () => {
     setIsAnalyzing(true);
     setTimeout(() => {
@@ -137,7 +128,6 @@ export default function CheckScreen() {
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
-      {/* Header Halaman */}
       <View style={styles.headerSection}>
         <Text style={styles.headerTitle}>Cardio Risk Screening</Text>
         <Text style={styles.headerSubtitle}>
@@ -145,7 +135,6 @@ export default function CheckScreen() {
         </Text>
       </View>
 
-      {/* Indikator Langkah Form */}
       {step < 4 && (
         <View style={styles.stepTabs}>
           {[
@@ -201,7 +190,6 @@ export default function CheckScreen() {
         </View>
       )}
 
-      {/* Langkah 1: Biometrik Fisik */}
       {step === 1 && (
         <FadeInView delay={40}>
           <View style={styles.card}>
@@ -307,7 +295,6 @@ export default function CheckScreen() {
               </View>
             </View>
 
-            {/* Banner BMI Real-time */}
             <View style={styles.bmiCard}>
               <View style={{ flex: 1, paddingRight: 8 }}>
                 <Text style={styles.bmiCardTitle}>Body Mass Index (BMI)</Text>
@@ -335,7 +322,6 @@ export default function CheckScreen() {
         </FadeInView>
       )}
 
-      {/* Langkah 2: Gaya Hidup */}
       {step === 2 && (
         <FadeInView delay={40}>
           <View style={styles.card}>
@@ -456,7 +442,6 @@ export default function CheckScreen() {
         </FadeInView>
       )}
 
-      {/* Langkah 3: Riwayat Medis */}
       {step === 3 && (
         <FadeInView delay={40}>
           <View style={styles.card}>
@@ -591,7 +576,6 @@ export default function CheckScreen() {
         </FadeInView>
       )}
 
-      {/* Langkah 4: Tampilan Hasil Penilaian */}
       {step === 4 && (
         <FadeInView delay={40}>
           <View style={styles.resultHighlightCard}>
@@ -679,7 +663,6 @@ export default function CheckScreen() {
         </FadeInView>
       )}
 
-      {/* Footer Bersih Sesuai Permintaan */}
       <View style={styles.footerNote}>
         <Text style={styles.footerNoteText}>Powered by Cardio-check engine</Text>
       </View>

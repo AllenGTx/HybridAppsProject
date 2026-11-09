@@ -23,7 +23,6 @@ export default function WelcomeScreen() {
 
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.content}>
-          {/* Integrated Brand Lockup (No harsh white background) */}
           <View style={styles.brandLockup}>
             <View style={styles.logoRing}>
               <Image
@@ -41,7 +40,6 @@ export default function WelcomeScreen() {
             </View>
           </View>
 
-          {/* Hero Section */}
           <View style={styles.heroSection}>
             <Text style={styles.heroTitle}>
               The best{"\n"}companion{"\n"}for your health
@@ -51,7 +49,6 @@ export default function WelcomeScreen() {
             </Text>
           </View>
 
-          {/* Action Buttons */}
           <View style={styles.actionGroup}>
             <TouchableOpacity
               style={styles.primaryButton}

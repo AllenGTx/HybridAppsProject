@@ -48,7 +48,6 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      {/* Organic Background Shapes */}
       <View style={styles.bgCircleTop} />
       <View style={styles.bgCircleBottom} />
       <View style={styles.bgLeaf} />

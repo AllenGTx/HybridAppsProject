@@ -29,13 +29,11 @@ export function AuthHeader({
   return (
     <View style={styles.wrapper}>
       <View style={[styles.headerBg, compact && styles.headerBgCompact]}>
-        {/* Subtle organic botanical shapes in background */}
         <View style={styles.circleTopRight} />
         <View style={styles.circleLeft} />
         <View style={styles.leafShape1} />
         <View style={styles.leafShape2} />
 
-        {/* Top Navigation Row */}
         <View style={styles.topBar}>
           {showBack ? (
             <TouchableOpacity
@@ -51,7 +49,6 @@ export function AuthHeader({
           )}
         </View>
 
-        {/* Integrated Brand Lockup */}
         <View style={styles.brandLockup}>
           <View style={styles.logoRing}>
             <Image
@@ -69,13 +66,11 @@ export function AuthHeader({
           </View>
         </View>
 
-        {/* Main Screen Title & Subtitle */}
         <View style={styles.textWrap}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.subtitle}>{subtitle}</Text>
         </View>
 
-        {/* True Vector SVG Wave with multi-line ribbons (Matching the uploaded wave sheet) */}
         <View style={styles.svgWaveWrapper} pointerEvents="none">
           <Svg
             width="100%"
@@ -83,21 +78,18 @@ export function AuthHeader({
             viewBox="0 0 1440 320"
             preserveAspectRatio="none"
           >
-            {/* Outer delicate wave line */}
             <Path
               d="M0,192 C380,310 820,40 1440,120"
               fill="none"
               stroke="rgba(255, 255, 255, 0.35)"
               strokeWidth="8"
             />
-            {/* Secondary inner wave ribbon */}
             <Path
               d="M0,210 C390,322 830,62 1440,138"
               fill="none"
               stroke="rgba(255, 255, 255, 0.65)"
               strokeWidth="10"
             />
-            {/* Main solid white wave body */}
             <Path
               d="M0,228 C400,335 840,85 1440,156 L1440,320 L0,320 Z"
               fill="#FFFFFF"

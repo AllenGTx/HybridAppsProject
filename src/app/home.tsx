@@ -1,9 +1,4 @@
 import React, { useState, useEffect } from "react";
-const logoLocal = require("../../assets/Logo.png");
-const profileLocal = require("../../assets/Profile.jpg");
-const cateringImg = require("../../assets/images/HealthyFood.webp");
-const dokter1Img = require("../../assets/images/Dokter 1.webp");
-const dokter2Img = require("../../assets/images/Dokter 2.webp");
 import {
   View,
   Text,
@@ -13,20 +8,27 @@ import {
   ScrollView,
   Animated,
   StyleSheet,
-  Dimensions,
   useWindowDimensions,
   Easing,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { healthTipsData } from "../data/healthTipsData";
+import { vitalsData } from "../data/vitalsData";
+import { VitalCard } from "../components/VitalCard";
+import { TipCard } from "../components/TipCard";
 import CheckScreen from "./check";
 import ProfileScreen from "./profile";
 import CateringScreen from "./catering";
 import HistoryScreen from "./history";
 
-const { width } = Dimensions.get("window");
+const logoLocal = require("../../assets/Logo.png");
+const profileLocal = require("../../assets/Profile.jpg");
+const cateringImg = require("../../assets/images/HealthyFood.webp");
+const dokter1Img = require("../../assets/images/Dokter 1.webp");
+const dokter2Img = require("../../assets/images/Dokter 2.webp");
 
-// FadeSlideIn
 function FadeSlideIn({
   children,
   delay = 0,
@@ -56,7 +58,7 @@ function FadeSlideIn({
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [delay, opacity, translateY]);
 
   return (
     <Animated.View style={[style, { opacity, transform: [{ translateY }] }]}>
@@ -65,14 +67,15 @@ function FadeSlideIn({
   );
 }
 
-// Header (Diperbarui dengan Re: Vitalize)
 function Header() {
   const [opacity] = useState(() => new Animated.Value(0));
   useEffect(() => {
     Animated.timing(opacity, {
-      toValue: 1, duration: 400, useNativeDriver: true,
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
     }).start();
-  }, []);
+  }, [opacity]);
 
   return (
     <Animated.View style={[styles.header, { opacity }]}>
@@ -87,143 +90,26 @@ function Header() {
   );
 }
 
-// VitalCard
-interface VitalCardProps {
-  icon: string;
-  iconBg: string;
-  title: string;
-  value: string;
-  unit?: string;
-  tag?: string;
-  tagColor?: string;
-  note?: string;
-  progress?: number;
-  goal?: string;
-  onAdd?: () => void;
-}
-
-function VitalCard({
-  icon, iconBg, title, value, unit, tag,
-  tagColor = "#296a4e", note, progress, goal, onAdd,
-}: VitalCardProps) {
-  const [scaleAnim] = useState(() => new Animated.Value(1));
-  const [progressAnim] = useState(() => new Animated.Value(0));
-
-  useEffect(() => {
-    if (progress !== undefined) {
-      Animated.timing(progressAnim, {
-        toValue: progress / 100,
-        duration: 900,
-        delay: 400,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: false,
-      }).start();
-    }
-  }, [progress]);
-
-  const handlePressIn = () =>
-    Animated.spring(scaleAnim, { toValue: 0.96, useNativeDriver: true, friction: 7 }).start();
-  const handlePressOut = () =>
-    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, friction: 7 }).start();
-
-  return (
-    <Animated.View style={[styles.vitalCard, { transform: [{ scale: scaleAnim }] }]}>
-      <TouchableOpacity
-        style={styles.vitalCardInner}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        activeOpacity={1}
-      >
-        <View style={styles.vitalCardTop}>
-          <View style={[styles.vitalIconBox, { backgroundColor: iconBg }]}>
-            <Text style={styles.vitalIcon}>{icon}</Text>
-          </View>
-          {onAdd ? (
-            <TouchableOpacity style={styles.addButton} onPress={onAdd}>
-              <MaterialIcons name="add" size={16} color="#006a43" />
-            </TouchableOpacity>
-          ) : tag ? (
-            <View style={[styles.vitalTag, { borderColor: tagColor + "40" }]}>
-              <Text style={[styles.vitalTagText, { color: tagColor }]}>{tag}</Text>
-            </View>
-          ) : null}
-        </View>
-        <View style={styles.vitalCardBody}>
-          <Text style={styles.vitalLabel}>{title}</Text>
-          <View style={styles.vitalValueRow}>
-            <Text style={styles.vitalValue}>{value}</Text>
-            {unit && <Text style={styles.vitalUnit}>{unit}</Text>}
-          </View>
-          {progress !== undefined && (
-            <View style={styles.progressTrack}>
-              <Animated.View
-                style={[
-                  styles.progressFill,
-                  { width: progressAnim.interpolate({ inputRange: [0, 1], outputRange: ["0%", "100%"] }) },
-                ]}
-              />
-            </View>
-          )}
-          {goal && <Text style={styles.vitalNote}>{goal}</Text>}
-          {note && <Text style={styles.vitalNote}>✓ {note}</Text>}
-        </View>
-      </TouchableOpacity>
-    </Animated.View>
-  );
-}
-
-// TipCard
-interface TipCardProps {
-  icon: string;
-  iconBg: string;
-  iconColor: string;
-  title: string;
-  subtitle: string;
-  body: string;
-  cta: string;
-  cardWidth?: number;
-}
-
-function TipCard({ icon, iconBg, title, subtitle, body, cta, cardWidth }: TipCardProps) {
-  const [scaleAnim] = useState(() => new Animated.Value(1));
-  const handlePressIn = () =>
-    Animated.spring(scaleAnim, { toValue: 0.97, useNativeDriver: true, friction: 8 }).start();
-  const handlePressOut = () =>
-    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, friction: 8 }).start();
-
-  return (
-    <Animated.View style={[styles.tipCard, cardWidth ? { width: cardWidth } : {}, { transform: [{ scale: scaleAnim }] }]}>
-      <TouchableOpacity onPressIn={handlePressIn} onPressOut={handlePressOut} activeOpacity={1}>
-        <View style={styles.tipCardHeader}>
-          <View style={[styles.tipIconBox, { backgroundColor: iconBg }]}>
-            <Text style={styles.tipIconText}>{icon}</Text>
-          </View>
-          <View style={styles.tipCardHeaderText}>
-            <Text style={styles.tipTitle}>{title}</Text>
-            <Text style={styles.tipSubtitle}>{subtitle}</Text>
-          </View>
-        </View>
-        <Text style={styles.tipBody}>{body}</Text>
-        <View style={styles.tipCta}>
-          <Text style={styles.tipCtaText}>{cta}</Text>
-          <MaterialIcons name="arrow-forward" size={14} color="#006a43" />
-        </View>
-      </TouchableOpacity>
-    </Animated.View>
-  );
-}
-
-// Heart Icon
 function PulsingHeart() {
   const [pulse] = useState(() => new Animated.Value(1));
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1.3, duration: 500, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 1, duration: 500, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+        Animated.timing(pulse, {
+          toValue: 1.3,
+          duration: 500,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulse, {
+          toValue: 1,
+          duration: 500,
+          easing: Easing.inOut(Easing.quad),
+          useNativeDriver: true,
+        }),
       ])
     ).start();
-  }, []);
+  }, [pulse]);
   return (
     <Animated.View style={{ transform: [{ scale: pulse }] }}>
       <MaterialIcons name="favorite" size={22} color="#ff4b4b" />
@@ -231,20 +117,20 @@ function PulsingHeart() {
   );
 }
 
-// HomeScreen
 type TabName = "home" | "check" | "catering" | "history" | "profile";
 
 export default function HomeScreen() {
   const { width: screenWidth } = useWindowDimensions();
   const containerWidth = Math.min(screenWidth, 420);
-  const TIP_CARD_WIDTH = containerWidth - 48;
+  const tipCardWidth = containerWidth - 48;
   const [activeTab, setActiveTab] = useState<TabName>("home");
   const [waterValue, setWaterValue] = useState(1.5);
-  const [checkState, setCheckState] = useState<"idle" | "calibrating" | "ready">("idle");
+  const [checkState] = useState<"idle" | "calibrating" | "ready">("idle");
   const [cateringScale] = useState(() => new Animated.Value(1));
   const [plateSpin] = useState(() => new Animated.Value(0));
   const [consultScale] = useState(() => new Animated.Value(1));
   const [consultLift] = useState(() => new Animated.Value(0));
+
   const tabs: { name: TabName; icon: string; label: string }[] = [
     { name: "home", icon: "home", label: "Home" },
     { name: "check", icon: "bar-chart", label: "Check" },
@@ -257,8 +143,18 @@ export default function HomeScreen() {
     Animated.spring(cateringScale, { toValue: 0.98, useNativeDriver: true }).start();
     plateSpin.stopAnimation((deg) => {
       Animated.sequence([
-        Animated.timing(plateSpin, { toValue: deg + 20, duration: 450, easing: Easing.in(Easing.quad), useNativeDriver: true }),
-        Animated.timing(plateSpin, { toValue: deg + 3600, duration: 45000, easing: Easing.linear, useNativeDriver: true }),
+        Animated.timing(plateSpin, {
+          toValue: deg + 20,
+          duration: 450,
+          easing: Easing.in(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(plateSpin, {
+          toValue: deg + 3600,
+          duration: 45000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
       ]).start();
     });
   };
@@ -266,7 +162,12 @@ export default function HomeScreen() {
   const handleCateringOut = () => {
     Animated.spring(cateringScale, { toValue: 1, useNativeDriver: true }).start();
     plateSpin.stopAnimation((deg) => {
-      Animated.timing(plateSpin, { toValue: deg + 20, duration: 750, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+      Animated.timing(plateSpin, {
+        toValue: deg + 20,
+        duration: 750,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
     });
   };
 
@@ -318,204 +219,224 @@ export default function HomeScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-        <View style={styles.contentContainer}>
-
-          {/* Greeting */}
-          <FadeSlideIn delay={100}>
-            <View style={styles.greetingRow}>
-              <View style={styles.greetingText}>
-                <Text style={styles.greetingTitle}>Hello, Alex 👋</Text>
-                <Text style={styles.greetingSubtitle}>How are you feeling today?</Text>
-              </View>
-              <View style={styles.avatarWrapper}>
-                <Image source={profileLocal} style={styles.avatar} resizeMode="cover" />
-                <View style={styles.avatarStatus} />
-              </View>
-            </View>
-          </FadeSlideIn>
-
-          {/* Heart check card */}
-          <FadeSlideIn delay={200}>
-            <View style={styles.highlightCard}>
-              <View style={styles.pulseRing1} pointerEvents="none" />
-              <View style={styles.pulseRing2} pointerEvents="none" />
-
-              <View style={styles.highlightInner}>
-                <View style={styles.highlightRow}>
-                  <View style={styles.highlightTitleRow}>
-                    <PulsingHeart />
-                    <Text style={styles.highlightTitle}>Heart Health Check</Text>
-                  </View>
-                  <View style={styles.lastCheckBadge}>
-                    <View style={styles.lastCheckDot} />
-                    <Text style={styles.lastCheckText}>Last check: Normal</Text>
-                  </View>
+          <View style={styles.contentContainer}>
+            <FadeSlideIn delay={100}>
+              <View style={styles.greetingRow}>
+                <View style={styles.greetingText}>
+                  <Text style={styles.greetingTitle}>Hello, Alex 👋</Text>
+                  <Text style={styles.greetingSubtitle}>How are you feeling today?</Text>
                 </View>
+                <View style={styles.avatarWrapper}>
+                  <Image source={profileLocal} style={styles.avatar} resizeMode="cover" />
+                  <View style={styles.avatarStatus} />
+                </View>
+              </View>
+            </FadeSlideIn>
 
-                <Text style={styles.highlightBody}>
-                  Comprehensive vascular check ready. Capture blood flow dynamics &amp; HRV in 45 seconds.
-                </Text>
+            <FadeSlideIn delay={200}>
+              <View style={styles.highlightCard}>
+                <View style={styles.pulseRing1} pointerEvents="none" />
+                <View style={styles.pulseRing2} pointerEvents="none" />
 
-                <TouchableOpacity style={styles.checkButton} onPress={handleCheckNow} activeOpacity={0.85}>
-                  {checkState === "idle" && (
-                    <>
-                      <Text style={styles.checkButtonText}>Check Now</Text>
-                      <MaterialIcons name="arrow-forward" size={18} color="#006a43" style={{ marginLeft: 4 }} />
-                    </>
-                  )}
-                  {checkState === "calibrating" && (
-                    <>
-                      <MaterialIcons name="settings" size={16} color="#006a43" />
-                      <Text style={styles.checkButtonText}>Calibrating Sensor...</Text>
-                    </>
-                  )}
-                  {checkState === "ready" && (
-                    <>
-                      <MaterialIcons name="check-circle" size={16} color="#006a43" />
-                      <Text style={styles.checkButtonText}>Ready &amp; Calibrated</Text>
-                    </>
-                  )}
+                <View style={styles.highlightInner}>
+                  <View style={styles.highlightRow}>
+                    <View style={styles.highlightTitleRow}>
+                      <PulsingHeart />
+                      <Text style={styles.highlightTitle}>Heart Health Check</Text>
+                    </View>
+                    <View style={styles.lastCheckBadge}>
+                      <View style={styles.lastCheckDot} />
+                      <Text style={styles.lastCheckText}>Last check: Normal</Text>
+                    </View>
+                  </View>
+
+                  <Text style={styles.highlightBody}>
+                    Comprehensive vascular check ready. Capture blood flow dynamics &amp; HRV in 45 seconds.
+                  </Text>
+
+                  <TouchableOpacity style={styles.checkButton} onPress={handleCheckNow} activeOpacity={0.85}>
+                    {checkState === "idle" && (
+                      <>
+                        <Text style={styles.checkButtonText}>Check Now</Text>
+                        <MaterialIcons name="arrow-forward" size={18} color="#006a43" style={{ marginLeft: 4 }} />
+                      </>
+                    )}
+                    {checkState === "calibrating" && (
+                      <>
+                        <MaterialIcons name="settings" size={16} color="#006a43" />
+                        <Text style={styles.checkButtonText}>Calibrating Sensor...</Text>
+                      </>
+                    )}
+                    {checkState === "ready" && (
+                      <>
+                        <MaterialIcons name="check-circle" size={16} color="#006a43" />
+                        <Text style={styles.checkButtonText}>Ready &amp; Calibrated</Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </FadeSlideIn>
+
+            <FadeSlideIn delay={320}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>{"Today's Overview"}</Text>
+                <TouchableOpacity style={styles.seeAllBtn}>
+                  <Text style={styles.seeAllText}>See details ›</Text>
                 </TouchableOpacity>
               </View>
-            </View>
-          </FadeSlideIn>
 
-          {/* Overview */}
-          <FadeSlideIn delay={320}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>{"Today's Overview"}</Text>
-              <TouchableOpacity style={styles.seeAllBtn}>
-                <Text style={styles.seeAllText}>See details ›</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.vitalsGrid}>
-              <VitalCard icon="❤️" iconBg="#ffe5e5" title="Heart Rate" value="72" unit="bpm" tag="Live" note="Resting normal" />
-              <VitalCard icon="🚶" iconBg="#e5f0ff" title="Daily Steps" value="5,430" tag="68%" tagColor="#2563eb" progress={68} goal="Goal: 8,000" />
-              <VitalCard icon="💧" iconBg="#e5f6ff" title="Water Intake" value={waterValue.toFixed(1)} unit="L" goal="Target 2.5 L" onAdd={handleAddWater} />
-              <VitalCard icon="🌙" iconBg="#ede5ff" title="Sleep Cycle" value="7h 20m" tag="Good" tagColor="#006a43" note="Deep: 1h 45m" />
-            </View>
-          </FadeSlideIn>
-
-          {/* Catering card */}
-          <FadeSlideIn delay={380}>
-            <Animated.View style={{ transform: [{ scale: cateringScale }] }}>
-              <Pressable
-                style={styles.cateringBanner}
-                onHoverIn={handleCateringIn}
-                onHoverOut={handleCateringOut}
-                onPressIn={handleCateringIn}
-                onPressOut={handleCateringOut}
-                onPress={() => setActiveTab("catering")}
-              >
-                <View style={styles.cateringBgCircleTop} pointerEvents="none" />
-                <View style={styles.cateringPlateHaloOuter} pointerEvents="none" />
-                <View style={styles.cateringPlateHaloInner} pointerEvents="none" />
-                <MaterialIcons name="eco" size={42} color="rgba(217, 119, 6, 0.11)" style={styles.cateringLeaf1} pointerEvents="none" />
-                <MaterialIcons name="eco" size={40} color="rgba(217, 119, 6, 0.1)" style={styles.cateringLeaf2} pointerEvents="none" />
-                <MaterialIcons name="eco" size={56} color="rgba(217, 119, 6, 0.12)" style={styles.cateringLeaf3} pointerEvents="none" />
-
-                <View style={styles.cateringLeft}>
-                  <Text style={styles.cateringTitle}>{"Looking for tasty food\nthat isn't bland?"}</Text>
-                  <Text style={styles.cateringDesc}>
-                    Low cholesterol & portion-controlled meals, crafted for your heart.
-                  </Text>
-                  <View style={styles.cateringBtn}>
-                    <Text style={styles.cateringBtnText}>Order Now</Text>
-                    <MaterialIcons name="arrow-forward" size={14} color="#ffffff" />
-                  </View>
-                </View>
-
-                <View style={styles.cateringPlateWrapper} pointerEvents="none">
-                  <Animated.View style={[styles.cateringPlateCircle, { transform: [{ rotate: plateRotate }] }]}>
-                    <Image source={cateringImg} style={styles.cateringPlateImage} resizeMode="cover" />
-                  </Animated.View>
-                </View>
-              </Pressable>
-            </Animated.View>
-          </FadeSlideIn>
-
-          {/* Consultation card */}
-          <FadeSlideIn delay={410}>
-            <Animated.View style={{ transform: [{ scale: consultScale }] }}>
-              <Pressable
-                style={styles.consultBanner}
-                onHoverIn={handleConsultIn}
-                onHoverOut={handleConsultOut}
-                onPressIn={handleConsultIn}
-                onPressOut={handleConsultOut}
-              >
-                <View style={styles.consultGlow1} pointerEvents="none" />
-                <View style={styles.consultGlow2} pointerEvents="none" />
-                <MaterialIcons name="medical-services" size={48} color="rgba(0, 106, 67, 0.08)" style={styles.consultIcon1} pointerEvents="none" />
-                <MaterialIcons name="medication" size={38} color="rgba(0, 106, 67, 0.08)" style={styles.consultIcon2} pointerEvents="none" />
-                <MaterialIcons name="healing" size={32} color="rgba(0, 106, 67, 0.07)" style={styles.consultIcon3} pointerEvents="none" />
-                <MaterialIcons name="vaccines" size={34} color="rgba(0, 106, 67, 0.07)" style={styles.consultIcon4} pointerEvents="none" />
-
-                <View style={styles.consultDocsWrapper} pointerEvents="none">
-                  <Animated.Image
-                    source={dokter2Img}
-                    style={[styles.consultDocBack, { transform: [{ translateX: docBackX }] }]}
-                    resizeMode="contain"
+              <View style={styles.vitalsGrid}>
+                {vitalsData.map((item) => (
+                  <VitalCard
+                    key={item.id}
+                    icon={item.icon}
+                    iconBg={item.iconBg}
+                    title={item.title}
+                    value={item.isWater ? waterValue.toFixed(1) : item.value}
+                    unit={item.unit}
+                    tag={item.tag}
+                    tagColor={item.tagColor}
+                    note={item.note}
+                    progress={item.progress}
+                    goal={item.goal}
+                    onAdd={item.isWater ? handleAddWater : undefined}
                   />
-                  <Animated.Image
-                    source={dokter1Img}
-                    style={[styles.consultDocFront, { transform: [{ scale: docFrontScale }, { scaleX: -1 }] }]}
-                    resizeMode="contain"
-                  />
-                </View>
+                ))}
+              </View>
+            </FadeSlideIn>
 
-                <View style={styles.consultRight}>
-                  <Text style={styles.consultTitle}>{"Concerned about your\nheart & health?"}</Text>
-                  <Text style={styles.consultDesc}>
-                    Consult directly with our medical specialists anytime.
-                  </Text>
-                  <View style={styles.consultBtn}>
-                    <Text style={styles.consultBtnText}>
-                      Subscribe to Vitalize<Text style={styles.consultBtnPlus}>Plus+</Text>
+            <FadeSlideIn delay={380}>
+              <Animated.View style={{ transform: [{ scale: cateringScale }] }}>
+                <Pressable
+                  style={styles.cateringBanner}
+                  onHoverIn={handleCateringIn}
+                  onHoverOut={handleCateringOut}
+                  onPressIn={handleCateringIn}
+                  onPressOut={handleCateringOut}
+                  onPress={() => setActiveTab("catering")}
+                >
+                  <View style={styles.cateringBgCircleTop} pointerEvents="none" />
+                  <View style={styles.cateringPlateHaloOuter} pointerEvents="none" />
+                  <View style={styles.cateringPlateHaloInner} pointerEvents="none" />
+                  <MaterialIcons name="eco" size={42} color="rgba(217, 119, 6, 0.11)" style={styles.cateringLeaf1} pointerEvents="none" />
+                  <MaterialIcons name="eco" size={40} color="rgba(217, 119, 6, 0.1)" style={styles.cateringLeaf2} pointerEvents="none" />
+                  <MaterialIcons name="eco" size={56} color="rgba(217, 119, 6, 0.12)" style={styles.cateringLeaf3} pointerEvents="none" />
+
+                  <View style={styles.cateringLeft}>
+                    <Text style={styles.cateringTitle}>{"Looking for tasty healthy\nfood that isn't bland?"}</Text>
+                    <Text style={styles.cateringDesc}>
+                      Low cholesterol & portion-controlled meals, crafted for your heart.
                     </Text>
-                    <MaterialIcons name="arrow-forward" size={13} color="#ffffff" />
+                    <View style={styles.cateringBtn}>
+                      <Text style={styles.cateringBtnText}>Order Now</Text>
+                      <MaterialIcons name="arrow-forward" size={14} color="#ffffff" />
+                    </View>
                   </View>
+
+                  <View style={styles.cateringPlateWrapper} pointerEvents="none">
+                    <Animated.View style={[styles.cateringPlateCircle, { transform: [{ rotate: plateRotate }] }]}>
+                      <Image source={cateringImg} style={styles.cateringPlateImage} resizeMode="cover" />
+                    </Animated.View>
+                  </View>
+                </Pressable>
+              </Animated.View>
+            </FadeSlideIn>
+
+            <FadeSlideIn delay={410}>
+              <Animated.View style={{ transform: [{ scale: consultScale }] }}>
+                <Pressable
+                  style={styles.consultBanner}
+                  onHoverIn={handleConsultIn}
+                  onHoverOut={handleConsultOut}
+                  onPressIn={handleConsultIn}
+                  onPressOut={handleConsultOut}
+                >
+                  <View style={styles.consultGlow1} pointerEvents="none" />
+                  <View style={styles.consultGlow2} pointerEvents="none" />
+                  <MaterialIcons name="medical-services" size={48} color="rgba(0, 106, 67, 0.08)" style={styles.consultIcon1} pointerEvents="none" />
+                  <MaterialIcons name="medication" size={38} color="rgba(0, 106, 67, 0.08)" style={styles.consultIcon2} pointerEvents="none" />
+                  <MaterialIcons name="healing" size={32} color="rgba(0, 106, 67, 0.07)" style={styles.consultIcon3} pointerEvents="none" />
+                  <MaterialIcons name="vaccines" size={34} color="rgba(0, 106, 67, 0.07)" style={styles.consultIcon4} pointerEvents="none" />
+
+                  <View style={styles.consultDocsWrapper} pointerEvents="none">
+                    <Animated.Image
+                      source={dokter2Img}
+                      style={[styles.consultDocBack, { transform: [{ translateX: docBackX }] }]}
+                      resizeMode="contain"
+                    />
+                    <Animated.Image
+                      source={dokter1Img}
+                      style={[styles.consultDocFront, { transform: [{ scale: docFrontScale }, { scaleX: -1 }] }]}
+                      resizeMode="contain"
+                    />
+                  </View>
+
+                  <View style={styles.consultRight}>
+                    <Text style={styles.consultTitle}>{"Concerned about your\nheart & health?"}</Text>
+                    <Text style={styles.consultDesc}>
+                      Consult directly with our medical specialists anytime.
+                    </Text>
+                    <View style={styles.consultBtn}>
+                      <Text style={styles.consultBtnText}>
+                        Subscribe to Vitalize<Text style={styles.consultBtnPlus}>Plus+</Text>
+                      </Text>
+                      <MaterialIcons name="arrow-forward" size={13} color="#ffffff" />
+                    </View>
+                  </View>
+                </Pressable>
+              </Animated.View>
+            </FadeSlideIn>
+
+            <FadeSlideIn delay={440}>
+              <View style={styles.sectionHeader}>
+                <View>
+                  <Text style={styles.sectionTitle}>Health Tips</Text>
+                  <Text style={styles.sectionSubtitle}>Curated for your circulatory balance</Text>
                 </View>
-              </Pressable>
-            </Animated.View>
-          </FadeSlideIn>
-
-          {/* Health Tips */}
-          <FadeSlideIn delay={440}>
-            <View style={styles.sectionHeader}>
-              <View>
-                <Text style={styles.sectionTitle}>Health Tips</Text>
-                <Text style={styles.sectionSubtitle}>Curated for your circulatory balance</Text>
+                <View style={styles.tipDots}>
+                  <View style={[styles.tipDot, styles.tipDotActive]} />
+                  <View style={styles.tipDot} />
+                  <View style={styles.tipDot} />
+                </View>
               </View>
-              <View style={styles.tipDots}>
-                <View style={[styles.tipDot, styles.tipDotActive]} />
-                <View style={styles.tipDot} />
-                <View style={styles.tipDot} />
-              </View>
-            </View>
-          </FadeSlideIn>
+            </FadeSlideIn>
 
-          <FadeSlideIn delay={520}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={true}
-              contentContainerStyle={styles.tipsScroll}
-              snapToInterval={TIP_CARD_WIDTH + 12}
-              decelerationRate="fast"
-            >
-              <TipCard icon="🌬️" iconBg="#a0f3d9" iconColor="#006955" title="Mindful Breathing" subtitle="5 min exercise" body="5 minutes of rhythmic 4-7-8 breathing can lower your resting heart rate and measurably decrease morning cortisol." cta="Try Quick Guided Session" cardWidth={TIP_CARD_WIDTH} />
-              <TipCard icon="☀️" iconBg="#fff3c4" iconColor="#b45309" title="Circadian Reset" subtitle="Morning habit" body="Ten minutes of natural indirect sunlight within 30 minutes of waking anchors your melatonin curve for restorative sleep." cta="Log Light Exposure" cardWidth={TIP_CARD_WIDTH} />
-              <TipCard icon="🥗" iconBg="#d9e5df" iconColor="#006a43" title="Gut-Heart Link" subtitle="Nutrition tip" body="Adding 25g of soluble fiber daily has been shown to reduce LDL cholesterol by up to 10% within 6 weeks of consistent intake." cta="View Meal Suggestions" cardWidth={TIP_CARD_WIDTH} />
-            </ScrollView>
-          </FadeSlideIn>
+            <FadeSlideIn delay={520}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={true}
+                contentContainerStyle={styles.tipsScroll}
+                snapToInterval={tipCardWidth + 12}
+                decelerationRate="fast"
+              >
+                {healthTipsData.map((tip) => (
+                  <TipCard
+                    key={tip.id}
+                    icon={tip.icon}
+                    iconBg={tip.iconBg}
+                    iconColor={tip.iconColor}
+                    title={tip.title}
+                    subtitle={tip.subtitle}
+                    body={tip.summary}
+                    cta="Read Full Guide ›"
+                    cardWidth={tipCardWidth}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/detail",
+                        params: { id: tip.id },
+                      })
+                    }
+                  />
+                ))}
+              </ScrollView>
+            </FadeSlideIn>
 
-          <View style={{ height: 24 }} />
-        </View>
-      </ScrollView>
+            <View style={{ height: 24 }} />
+          </View>
+        </ScrollView>
       )}
 
-      {/* Bottom nav */}
       <View style={styles.bottomNav}>
         <View style={styles.bottomNavContainer}>
           {tabs.map((tab) => {
@@ -548,11 +469,9 @@ export default function HomeScreen() {
   );
 }
 
-// Styles
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#effcf5" },
 
-  // Header
   header: {
     height: 56,
     paddingHorizontal: 20,
@@ -583,15 +502,15 @@ const styles = StyleSheet.create({
     color: "#131e1a",
   },
 
-  // Scroll
   scrollView: { flex: 1 },
   scrollContent: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 80 },
   contentContainer: { width: "100%", maxWidth: 1024, alignSelf: "center" },
 
-  // Greeting
   greetingRow: {
-    flexDirection: "row", alignItems: "center",
-    justifyContent: "space-between", marginBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
   },
   greetingText: { flex: 1 },
   greetingTitle: { fontSize: 22, fontWeight: "700", color: "#131e1a", letterSpacing: -0.5 },
@@ -599,32 +518,52 @@ const styles = StyleSheet.create({
   avatarWrapper: { position: "relative" },
   avatar: { width: 48, height: 48, borderRadius: 24 },
   avatarStatus: {
-    position: "absolute", bottom: 0, right: 0,
-    width: 14, height: 14, borderRadius: 7,
-    backgroundColor: "#008655", borderWidth: 2, borderColor: "#effcf5",
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: "#008655",
+    borderWidth: 2,
+    borderColor: "#effcf5",
   },
 
-  // Heart check card
   highlightCard: {
-    borderRadius: 20, overflow: "hidden",
-    backgroundColor: "#006a43", marginBottom: 24, position: "relative",
+    borderRadius: 20,
+    overflow: "hidden",
+    backgroundColor: "#006a43",
+    marginBottom: 24,
+    position: "relative",
   },
   pulseRing1: {
-    position: "absolute", right: -40, top: -40,
-    width: 160, height: 160, borderRadius: 80,
+    position: "absolute",
+    right: -40,
+    top: -40,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
     backgroundColor: "rgba(255,255,255,0.05)",
   },
   pulseRing2: {
-    position: "absolute", right: -10, top: -10,
-    width: 100, height: 100, borderRadius: 50,
+    position: "absolute",
+    right: -10,
+    top: -10,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     backgroundColor: "rgba(255,255,255,0.07)",
   },
   highlightInner: { paddingHorizontal: 22, paddingVertical: 22, gap: 8 },
   highlightRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   lastCheckBadge: {
-    flexDirection: "row", alignItems: "center", gap: 5,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
     backgroundColor: "rgba(255,255,255,0.12)",
-    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
   },
   lastCheckDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#aef1cd" },
   lastCheckText: { fontSize: 11, color: "#aef1cd" },
@@ -632,81 +571,74 @@ const styles = StyleSheet.create({
   highlightTitle: { fontSize: 19, fontWeight: "700", color: "#ffffff", letterSpacing: -0.2 },
   highlightBody: { fontSize: 13, color: "rgba(255,255,255,0.85)", lineHeight: 20 },
   checkButton: {
-    backgroundColor: "#ffffff", borderRadius: 14,
-    flexDirection: "row", alignItems: "center", justifyContent: "center",
-    paddingVertical: 14, gap: 6, marginTop: 12,
+    backgroundColor: "#ffffff",
+    borderRadius: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    gap: 6,
+    marginTop: 12,
   },
   checkButtonText: { fontSize: 14, fontWeight: "600", color: "#006a43" },
 
-  // Section header
   sectionHeader: {
-    flexDirection: "row", justifyContent: "space-between",
-    alignItems: "center", marginBottom: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
   },
   sectionTitle: { fontSize: 16, fontWeight: "700", color: "#131e1a" },
   sectionSubtitle: { fontSize: 12, color: "#3e4941", marginTop: 2 },
   seeAllBtn: { flexDirection: "row", alignItems: "center" },
   seeAllText: { fontSize: 12, fontWeight: "600", color: "#006a43" },
 
-  // Vitals grid
   vitalsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginBottom: 24 },
-  vitalCard: {
-    flexBasis: "48%", flexGrow: 1, minWidth: 140,
-    backgroundColor: "#ffffff", borderRadius: 16,
-    shadowColor: "#006a43", shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06, shadowRadius: 12, elevation: 3,
-  },
-  vitalCardInner: { padding: 14, gap: 8 },
-  vitalCardTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  vitalIconBox: {
-    width: 40, height: 40, borderRadius: 12,
-    alignItems: "center", justifyContent: "center",
-  },
-  vitalIcon: { fontSize: 20 },
-  vitalTag: {
-    paddingHorizontal: 8, paddingVertical: 2,
-    borderRadius: 999, backgroundColor: "#eaf7f0", borderWidth: 1,
-  },
-  vitalTagText: { fontSize: 11, fontWeight: "600" },
-  addButton: {
-    width: 28, height: 28, borderRadius: 14,
-    backgroundColor: "#e4f1ea", alignItems: "center", justifyContent: "center",
-  },
-  vitalCardBody: { gap: 3 },
-  vitalLabel: { fontSize: 11, fontWeight: "500", color: "#3e4941", letterSpacing: 0.3 },
-  vitalValueRow: { flexDirection: "row", alignItems: "baseline", gap: 3 },
-  vitalValue: { fontSize: 26, fontWeight: "700", color: "#131e1a", lineHeight: 32 },
-  vitalUnit: { fontSize: 11, fontWeight: "500", color: "#3e4941" },
-  progressTrack: {
-    width: "100%", height: 5, backgroundColor: "#e4f1ea",
-    borderRadius: 3, overflow: "hidden", marginTop: 4,
-  },
-  progressFill: { height: "100%", backgroundColor: "#006a43", borderRadius: 3 },
-  vitalNote: { fontSize: 11, color: "#3e4941", marginTop: 2 },
 
-  // Catering
   cateringBanner: {
-    flexDirection: "row", alignItems: "center",
-    backgroundColor: "#fef3c7", borderRadius: 22,
-    paddingVertical: 20, paddingLeft: 20, paddingRight: 124,
-    marginBottom: 16, overflow: "hidden", position: "relative",
-    borderWidth: 1, borderColor: "#fcd34d",
-    shadowColor: "#b45309", shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08, shadowRadius: 12, elevation: 3,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fef3c7",
+    borderRadius: 22,
+    paddingVertical: 20,
+    paddingLeft: 20,
+    paddingRight: 124,
+    marginBottom: 16,
+    overflow: "hidden",
+    position: "relative",
+    borderWidth: 1,
+    borderColor: "#fcd34d",
+    shadowColor: "#b45309",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
   cateringBgCircleTop: {
-    position: "absolute", top: -60, left: -40,
-    width: 145, height: 145, borderRadius: 73,
+    position: "absolute",
+    top: -60,
+    left: -40,
+    width: 145,
+    height: 145,
+    borderRadius: 73,
     backgroundColor: "rgba(251, 191, 36, 0.15)",
   },
   cateringPlateHaloOuter: {
-    position: "absolute", right: -118, top: -42,
-    width: 248, height: 248, borderRadius: 124,
+    position: "absolute",
+    right: -118,
+    top: -42,
+    width: 248,
+    height: 248,
+    borderRadius: 124,
     backgroundColor: "rgba(251, 191, 36, 0.25)",
   },
   cateringPlateHaloInner: {
-    position: "absolute", right: -105, top: -29,
-    width: 222, height: 222, borderRadius: 111,
+    position: "absolute",
+    right: -105,
+    top: -29,
+    width: 222,
+    height: 222,
+    borderRadius: 111,
     backgroundColor: "rgba(245, 158, 11, 0.22)",
   },
   cateringLeaf1: { position: "absolute", top: -6, left: 195, transform: [{ rotate: "155deg" }] },
@@ -716,40 +648,73 @@ const styles = StyleSheet.create({
   cateringTitle: { fontSize: 17, fontWeight: "600", color: "#131e1a", lineHeight: 22, letterSpacing: -0.2 },
   cateringDesc: { fontSize: 12, color: "#451a03", lineHeight: 17 },
   cateringBtn: {
-    flexDirection: "row", alignItems: "center", alignSelf: "flex-start",
-    backgroundColor: "#006a43", paddingHorizontal: 14, paddingVertical: 9,
-    borderRadius: 12, gap: 6, marginTop: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    backgroundColor: "#006a43",
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 12,
+    gap: 6,
+    marginTop: 6,
   },
   cateringBtnText: { fontSize: 12, fontWeight: "700", color: "#ffffff" },
   cateringPlateWrapper: {
-    position: "absolute", right: -92, top: -18, bottom: -18,
-    justifyContent: "center", alignItems: "center",
+    position: "absolute",
+    right: -92,
+    top: -18,
+    bottom: -18,
+    justifyContent: "center",
+    alignItems: "center",
   },
   cateringPlateCircle: {
-    width: 196, height: 196, borderRadius: 98, overflow: "hidden",
-    backgroundColor: "#ffffff", alignItems: "center", justifyContent: "center",
-    borderWidth: 3, borderColor: "#ffffff",
+    width: 196,
+    height: 196,
+    borderRadius: 98,
+    overflow: "hidden",
+    backgroundColor: "#ffffff",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 3,
+    borderColor: "#ffffff",
   },
   cateringPlateImage: { width: 246, height: 246 },
 
-  // Consultation
   consultBanner: {
-    flexDirection: "row", alignItems: "center",
-    backgroundColor: "#dcfce7", borderRadius: 22,
-    paddingVertical: 18, paddingLeft: 172, paddingRight: 14,
-    marginBottom: 24, overflow: "hidden", position: "relative",
-    borderWidth: 1, borderColor: "#bbf7d0",
-    shadowColor: "#15803d", shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08, shadowRadius: 12, elevation: 3,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#dcfce7",
+    borderRadius: 22,
+    paddingVertical: 18,
+    paddingLeft: 172,
+    paddingRight: 14,
+    marginBottom: 24,
+    overflow: "hidden",
+    position: "relative",
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+    shadowColor: "#15803d",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
   },
   consultGlow1: {
-    position: "absolute", left: -20, bottom: -38,
-    width: 176, height: 176, borderRadius: 88,
+    position: "absolute",
+    left: -20,
+    bottom: -38,
+    width: 176,
+    height: 176,
+    borderRadius: 88,
     backgroundColor: "rgba(34, 197, 94, 0.12)",
   },
   consultGlow2: {
-    position: "absolute", left: 6, bottom: -18,
-    width: 128, height: 128, borderRadius: 64,
+    position: "absolute",
+    left: 6,
+    bottom: -18,
+    width: 128,
+    height: 128,
+    borderRadius: 64,
     backgroundColor: "rgba(74, 222, 128, 0.14)",
   },
   consultIcon1: { position: "absolute", top: -6, right: -6, transform: [{ rotate: "-15deg" }] },
@@ -763,46 +728,40 @@ const styles = StyleSheet.create({
   consultTitle: { fontSize: 15, fontWeight: "700", color: "#131e1a", lineHeight: 20, letterSpacing: -0.2 },
   consultDesc: { fontSize: 11, fontWeight: "400", color: "#3e4941", lineHeight: 15.5 },
   consultBtn: {
-    flexDirection: "row", alignItems: "center", alignSelf: "flex-start",
-    backgroundColor: "#006a43", paddingHorizontal: 12, paddingVertical: 7,
-    borderRadius: 11, gap: 5, marginTop: 5,
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
+    backgroundColor: "#006a43",
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 11,
+    gap: 5,
+    marginTop: 5,
   },
   consultBtnText: { fontSize: 11, fontWeight: "700", color: "#ffffff" },
   consultBtnPlus: { color: "#86efac", fontWeight: "800", fontStyle: "italic" },
 
-  // Tips
   tipDots: { flexDirection: "row", alignItems: "center", gap: 4 },
   tipDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "#d0ddd6" },
   tipDotActive: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#006a43" },
   tipsScroll: { gap: 12, paddingRight: 20, marginBottom: 4 },
-  tipCard: {
-    width: Math.min(width - 48, 1024),
-    backgroundColor: "#ffffff", borderRadius: 16, padding: 18,
-    shadowColor: "#006a43", shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05, shadowRadius: 12, elevation: 3,
-  },
-  tipCardHeader: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 10 },
-  tipIconBox: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
-  tipIconText: { fontSize: 18 },
-  tipCardHeaderText: { flex: 1 },
-  tipTitle: { fontSize: 14, fontWeight: "700", color: "#131e1a" },
-  tipSubtitle: { fontSize: 11, color: "#296a4e", marginTop: 1 },
-  tipBody: { fontSize: 13, color: "#3e4941", lineHeight: 20, marginBottom: 8 },
-  tipCta: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    backgroundColor: "#eaf7f0", paddingHorizontal: 14, paddingVertical: 10,
-    borderRadius: 10,
-  },
-  tipCtaText: { fontSize: 11, fontWeight: "600", color: "#006a43" },
 
-  // Bottom nav
   bottomNav: {
-    position: "absolute", bottom: 0, left: 0, right: 0, height: 64,
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 64,
     backgroundColor: "rgba(239,252,245,0.97)",
-    alignItems: "center", justifyContent: "center",
-    borderTopWidth: 1, borderTopColor: "rgba(27,94,67,0.06)",
-    shadowColor: "#006a43", shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.06, shadowRadius: 16, elevation: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(27,94,67,0.06)",
+    shadowColor: "#006a43",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 8,
   },
   tabActivePill: {
     height: 3,
@@ -815,12 +774,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#006a43",
   },
   bottomNavContainer: {
-    flexDirection: "row", width: "100%", maxWidth: 1024,
-    paddingHorizontal: 22, alignItems: "center", justifyContent: "space-between",
+    flexDirection: "row",
+    width: "100%",
+    maxWidth: 1024,
+    paddingHorizontal: 22,
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   tabItem: {
-    alignItems: "center", justifyContent: "center",
-    paddingTop: 8, paddingBottom: 4, paddingHorizontal: 4, gap: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 8,
+    paddingBottom: 4,
+    paddingHorizontal: 4,
+    gap: 2,
   },
   tabLabel: { fontSize: 11, fontWeight: "500", color: "#8c9b91", letterSpacing: 0.2 },
   tabLabelActive: { color: "#006a43", fontWeight: "700" },
