@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 const logoLocal = require("../../assets/Logo.png");
 const profileLocal = require("../../assets/Profile.jpg");
 const cateringImg = require("../../assets/images/HealthyFood.webp");
+const dokter1Img = require("../../assets/images/Dokter 1.webp");
+const dokter2Img = require("../../assets/images/Dokter 2.webp");
 import {
   View,
   Text,
@@ -241,6 +243,8 @@ export default function HomeScreen() {
   const [checkState, setCheckState] = useState<"idle" | "calibrating" | "ready">("idle");
   const [cateringScale] = useState(() => new Animated.Value(1));
   const [plateSpin] = useState(() => new Animated.Value(0));
+  const [consultScale] = useState(() => new Animated.Value(1));
+  const [consultLift] = useState(() => new Animated.Value(0));
   const tabs: { name: TabName; icon: string; label: string }[] = [
     { name: "home", icon: "home", label: "Home" },
     { name: "check", icon: "bar-chart", label: "Check" },
@@ -270,6 +274,19 @@ export default function HomeScreen() {
     inputRange: [0, 360],
     outputRange: ["0deg", "360deg"],
   });
+
+  const handleConsultIn = () => {
+    Animated.spring(consultScale, { toValue: 0.98, useNativeDriver: true }).start();
+    Animated.spring(consultLift, { toValue: 1, useNativeDriver: true }).start();
+  };
+
+  const handleConsultOut = () => {
+    Animated.spring(consultScale, { toValue: 1, useNativeDriver: true }).start();
+    Animated.spring(consultLift, { toValue: 0, useNativeDriver: true }).start();
+  };
+
+  const docFrontScale = consultLift.interpolate({ inputRange: [0, 1], outputRange: [1, 1.04] });
+  const docBackX = consultLift.interpolate({ inputRange: [0, 1], outputRange: [0, -4] });
 
   const handleTabPress = (tab: TabName) => {
     setActiveTab(tab);
@@ -413,6 +430,52 @@ export default function HomeScreen() {
                   <Animated.View style={[styles.cateringPlateCircle, { transform: [{ rotate: plateRotate }] }]}>
                     <Image source={cateringImg} style={styles.cateringPlateImage} resizeMode="cover" />
                   </Animated.View>
+                </View>
+              </Pressable>
+            </Animated.View>
+          </FadeSlideIn>
+
+          {/* Consultation card */}
+          <FadeSlideIn delay={410}>
+            <Animated.View style={{ transform: [{ scale: consultScale }] }}>
+              <Pressable
+                style={styles.consultBanner}
+                onHoverIn={handleConsultIn}
+                onHoverOut={handleConsultOut}
+                onPressIn={handleConsultIn}
+                onPressOut={handleConsultOut}
+              >
+                <View style={styles.consultGlow1} pointerEvents="none" />
+                <View style={styles.consultGlow2} pointerEvents="none" />
+                <MaterialIcons name="medical-services" size={48} color="rgba(0, 106, 67, 0.08)" style={styles.consultIcon1} pointerEvents="none" />
+                <MaterialIcons name="medication" size={38} color="rgba(0, 106, 67, 0.08)" style={styles.consultIcon2} pointerEvents="none" />
+                <MaterialIcons name="healing" size={32} color="rgba(0, 106, 67, 0.07)" style={styles.consultIcon3} pointerEvents="none" />
+                <MaterialIcons name="vaccines" size={34} color="rgba(0, 106, 67, 0.07)" style={styles.consultIcon4} pointerEvents="none" />
+
+                <View style={styles.consultDocsWrapper} pointerEvents="none">
+                  <Animated.Image
+                    source={dokter2Img}
+                    style={[styles.consultDocBack, { transform: [{ translateX: docBackX }] }]}
+                    resizeMode="contain"
+                  />
+                  <Animated.Image
+                    source={dokter1Img}
+                    style={[styles.consultDocFront, { transform: [{ scale: docFrontScale }, { scaleX: -1 }] }]}
+                    resizeMode="contain"
+                  />
+                </View>
+
+                <View style={styles.consultRight}>
+                  <Text style={styles.consultTitle}>{"Bingung masalah jantung\n& kesehatan?"}</Text>
+                  <Text style={styles.consultDesc}>
+                    Konsultasikan langsung dengan dokter ahli kami setiap saat.
+                  </Text>
+                  <View style={styles.consultBtn}>
+                    <Text style={styles.consultBtnText}>
+                      Langganan Vitalize<Text style={styles.consultBtnPlus}>Plus+</Text>
+                    </Text>
+                    <MaterialIcons name="arrow-forward" size={13} color="#ffffff" />
+                  </View>
                 </View>
               </Pressable>
             </Animated.View>
@@ -626,7 +689,7 @@ const styles = StyleSheet.create({
     flexDirection: "row", alignItems: "center",
     backgroundColor: "#fef3c7", borderRadius: 22,
     paddingVertical: 20, paddingLeft: 20, paddingRight: 118,
-    marginBottom: 24, overflow: "hidden", position: "relative",
+    marginBottom: 16, overflow: "hidden", position: "relative",
     borderWidth: 1, borderColor: "#fcd34d",
     shadowColor: "#b45309", shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08, shadowRadius: 12, elevation: 3,
@@ -668,6 +731,44 @@ const styles = StyleSheet.create({
     borderWidth: 3, borderColor: "#ffffff",
   },
   cateringPlateImage: { width: 246, height: 246 },
+
+  // Consultation
+  consultBanner: {
+    flexDirection: "row", alignItems: "center",
+    backgroundColor: "#dcfce7", borderRadius: 22,
+    paddingVertical: 18, paddingLeft: 172, paddingRight: 14,
+    marginBottom: 24, overflow: "hidden", position: "relative",
+    borderWidth: 1, borderColor: "#bbf7d0",
+    shadowColor: "#15803d", shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08, shadowRadius: 12, elevation: 3,
+  },
+  consultGlow1: {
+    position: "absolute", left: -20, bottom: -38,
+    width: 176, height: 176, borderRadius: 88,
+    backgroundColor: "rgba(34, 197, 94, 0.12)",
+  },
+  consultGlow2: {
+    position: "absolute", left: 6, bottom: -18,
+    width: 128, height: 128, borderRadius: 64,
+    backgroundColor: "rgba(74, 222, 128, 0.14)",
+  },
+  consultIcon1: { position: "absolute", top: -6, right: -6, transform: [{ rotate: "-15deg" }] },
+  consultIcon2: { position: "absolute", bottom: -6, right: 12, transform: [{ rotate: "18deg" }] },
+  consultIcon3: { position: "absolute", top: 8, left: 156, transform: [{ rotate: "-25deg" }] },
+  consultIcon4: { position: "absolute", bottom: 14, right: 68, transform: [{ rotate: "22deg" }] },
+  consultDocsWrapper: { position: "absolute", left: 0, bottom: 0, top: 0, width: 170 },
+  consultDocBack: { position: "absolute", bottom: -18, left: -8, width: 140, height: 140 },
+  consultDocFront: { position: "absolute", bottom: -18, left: 34, width: 144, height: 144 },
+  consultRight: { flex: 1, gap: 4, zIndex: 2 },
+  consultTitle: { fontSize: 15, fontWeight: "700", color: "#131e1a", lineHeight: 20, letterSpacing: -0.2 },
+  consultDesc: { fontSize: 11, fontWeight: "400", color: "#3e4941", lineHeight: 15.5 },
+  consultBtn: {
+    flexDirection: "row", alignItems: "center", alignSelf: "flex-start",
+    backgroundColor: "#006a43", paddingHorizontal: 12, paddingVertical: 7,
+    borderRadius: 11, gap: 5, marginTop: 5,
+  },
+  consultBtnText: { fontSize: 11, fontWeight: "700", color: "#ffffff" },
+  consultBtnPlus: { color: "#86efac", fontWeight: "800", fontStyle: "italic" },
 
   // Tips
   tipDots: { flexDirection: "row", alignItems: "center", gap: 4 },
