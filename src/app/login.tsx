@@ -21,6 +21,7 @@ const googleIcon = require("../../assets/google_icon.png");
 export default function LoginScreen() {
   const [emailOrName, setEmailOrName] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ emailOrName?: string; password?: string }>({});
   const [showForgotModal, setShowForgotModal] = useState(false);
@@ -149,19 +150,33 @@ export default function LoginScreen() {
                   <Text style={styles.forgotText}>Forgot?</Text>
                 </TouchableOpacity>
               </View>
-              <TextInput
-                style={[styles.input, errors.password ? styles.inputError : null]}
-                placeholder="••••••••••••••••"
-                placeholderTextColor="#C7C7CC"
-                secureTextEntry
-                value={password}
-                onChangeText={(text) => {
-                  setPassword(text);
-                  if (errors.password) {
-                    setErrors((prev) => ({ ...prev, password: undefined }));
-                  }
-                }}
-              />
+              <View style={[styles.passwordInputContainer, errors.password ? styles.inputError : null]}>
+                <TextInput
+                  style={styles.passwordInput}
+                  placeholder="••••••••••••••••"
+                  placeholderTextColor="#C7C7CC"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    if (errors.password) {
+                      setErrors((prev) => ({ ...prev, password: undefined }));
+                    }
+                  }}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  activeOpacity={0.7}
+                  style={styles.eyeIconBtn}
+                >
+                  <MaterialIcons
+                    name={showPassword ? "visibility" : "visibility-off"}
+                    size={20}
+                    color="#9CA3AF"
+                  />
+                </TouchableOpacity>
+              </View>
               {errors.password && (
                 <Text style={styles.errorText}>{errors.password}</Text>
               )}
@@ -280,6 +295,25 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#2C333A",
     paddingVertical: 8,
+  },
+  passwordInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    height: 42,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ECEEF0",
+  },
+  passwordInput: {
+    flex: 1,
+    fontSize: 15,
+    color: "#2C333A",
+    paddingVertical: 8,
+  },
+  eyeIconBtn: {
+    paddingLeft: 8,
+    paddingRight: 4,
+    justifyContent: "center",
+    alignItems: "center",
   },
   inputError: {
     borderBottomColor: "#EF4444",
