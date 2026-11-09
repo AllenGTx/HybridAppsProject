@@ -18,11 +18,64 @@ const googleIcon = require("../../assets/google_icon.png");
 
 export default function RegisterScreen() {
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{
+    name?: string;
+    email?: string;
+    password?: string;
+    repeatPassword?: string;
+  }>({});
+
+  const validate = () => {
+    const newErrors: {
+      name?: string;
+      email?: string;
+      password?: string;
+      repeatPassword?: string;
+    } = {};
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedName) {
+      newErrors.name = "Name is required";
+    } else if (trimmedName.length < 3) {
+      newErrors.name = "Name must be at least 3 characters";
+    }
+
+    if (!trimmedEmail) {
+      newErrors.email = "Email is required";
+    } else {
+      const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
+      if (!gmailRegex.test(trimmedEmail)) {
+        newErrors.email = "Email must end with @gmail.com";
+      }
+    }
+
+    if (!password) {
+      newErrors.password = "Password is required";
+    } else if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    } else if (!/\d/.test(password)) {
+      newErrors.password = "Password must contain at least 1 number";
+    } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(password)) {
+      newErrors.password = "Password must contain at least 1 special character";
+    }
+
+    if (!repeatPassword) {
+      newErrors.repeatPassword = "Please confirm your password";
+    } else if (repeatPassword !== password) {
+      newErrors.repeatPassword = "Passwords do not match";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleRegister = () => {
+    if (!validate()) return;
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
@@ -58,37 +111,79 @@ export default function RegisterScreen() {
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Name</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, errors.name ? styles.inputError : null]}
                 placeholder="John Doe"
                 placeholderTextColor="#C7C7CC"
                 value={name}
-                onChangeText={setName}
+                onChangeText={(text) => {
+                  setName(text);
+                  if (errors.name) {
+                    setErrors((prev) => ({ ...prev, name: undefined }));
+                  }
+                }}
                 autoCorrect={false}
               />
+              {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+            </View>
+
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={[styles.input, errors.email ? styles.inputError : null]}
+                placeholder="john@gmail.com"
+                placeholderTextColor="#C7C7CC"
+                value={email}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  if (errors.email) {
+                    setErrors((prev) => ({ ...prev, email: undefined }));
+                  }
+                }}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                autoCorrect={false}
+              />
+              {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
             </View>
 
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Password</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, errors.password ? styles.inputError : null]}
                 placeholder="••••••••••••••••"
                 placeholderTextColor="#C7C7CC"
                 secureTextEntry
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (errors.password) {
+                    setErrors((prev) => ({ ...prev, password: undefined }));
+                  }
+                }}
               />
+              {errors.password && (
+                <Text style={styles.errorText}>{errors.password}</Text>
+              )}
             </View>
 
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Repeat password</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, errors.repeatPassword ? styles.inputError : null]}
                 placeholder="••••••••••••••••"
                 placeholderTextColor="#C7C7CC"
                 secureTextEntry
                 value={repeatPassword}
-                onChangeText={setRepeatPassword}
+                onChangeText={(text) => {
+                  setRepeatPassword(text);
+                  if (errors.repeatPassword) {
+                    setErrors((prev) => ({ ...prev, repeatPassword: undefined }));
+                  }
+                }}
               />
+              {errors.repeatPassword && (
+                <Text style={styles.errorText}>{errors.repeatPassword}</Text>
+              )}
             </View>
 
             <TouchableOpacity
@@ -152,7 +247,7 @@ const styles = StyleSheet.create({
     paddingTop: 18,
   },
   fieldGroup: {
-    marginBottom: 22,
+    marginBottom: 16,
   },
   label: {
     fontSize: 13,
@@ -167,6 +262,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#2C333A",
     paddingVertical: 6,
+  },
+  inputError: {
+    borderBottomColor: "#EF4444",
+  },
+  errorText: {
+    fontSize: 11,
+    color: "#EF4444",
+    marginTop: 4,
+    fontWeight: "500",
   },
   submitButton: {
     height: 52,
@@ -191,7 +295,7 @@ const styles = StyleSheet.create({
     color: "#B0B5BC",
     fontSize: 12,
     fontWeight: "500",
-    marginVertical: 16,
+    marginVertical: 14,
   },
   googleButton: {
     height: 48,
@@ -224,7 +328,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 26,
+    marginTop: 22,
   },
   footerText: {
     fontSize: 12,

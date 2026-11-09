@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   ScrollView,
   StatusBar,
@@ -12,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { Link, router } from "expo-router";
+import { MaterialIcons } from "@expo/vector-icons";
 import { AuthHeader } from "../components/auth/AuthHeader";
 
 const googleIcon = require("../../assets/google_icon.png");
@@ -20,8 +22,70 @@ export default function LoginScreen() {
   const [emailOrName, setEmailOrName] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{ emailOrName?: string; password?: string }>({});
+  const [showForgotModal, setShowForgotModal] = useState(false);
+
+  const validate = () => {
+    const newErrors: { emailOrName?: string; password?: string } = {};
+    const trimmed = emailOrName.trim();
+
+    if (!trimmed) {
+      newErrors.emailOrName = "Name or email is required";
+    } else if (trimmed.includes("@")) {
+      const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
+      if (!gmailRegex.test(trimmed)) {
+        newErrors.emailOrName = "Email must end with @gmail.com";
+      }
+    } else if (trimmed.length < 3) {
+      newErrors.emailOrName = "Name must be at least 3 characters";
+    }
+
+    if (!password) {
+      newErrors.password = "Password is required";
+    } else if (password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    } else if (!/\d/.test(password)) {
+      newErrors.password = "Password must contain at least 1 number";
+    } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(password)) {
+      newErrors.password = "Password must contain at least 1 special character";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleForgotPassword = () => {
+    const trimmed = emailOrName.trim();
+    if (!trimmed) {
+      setErrors((prev) => ({
+        ...prev,
+        emailOrName: "Please enter your name or email first to reset password",
+      }));
+      return;
+    }
+
+    if (trimmed.includes("@")) {
+      const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
+      if (!gmailRegex.test(trimmed)) {
+        setErrors((prev) => ({
+          ...prev,
+          emailOrName: "Email must end with @gmail.com",
+        }));
+        return;
+      }
+    } else if (trimmed.length < 3) {
+      setErrors((prev) => ({
+        ...prev,
+        emailOrName: "Name must be at least 3 characters",
+      }));
+      return;
+    }
+
+    setShowForgotModal(true);
+  };
 
   const handleLogin = () => {
+    if (!validate()) return;
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
@@ -54,33 +118,53 @@ export default function LoginScreen() {
 
           <View style={styles.formContainer}>
             <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Name</Text>
+              <Text style={styles.label}>Name / Email</Text>
               <TextInput
-                style={styles.input}
-                placeholder="John Doe"
+                style={[styles.input, errors.emailOrName ? styles.inputError : null]}
+                placeholder="John Doe or john@gmail.com"
                 placeholderTextColor="#C7C7CC"
                 value={emailOrName}
-                onChangeText={setEmailOrName}
+                onChangeText={(text) => {
+                  setEmailOrName(text);
+                  if (errors.emailOrName) {
+                    setErrors((prev) => ({ ...prev, emailOrName: undefined }));
+                  }
+                }}
                 autoCapitalize="none"
                 autoCorrect={false}
               />
+              {errors.emailOrName && (
+                <Text style={styles.errorText}>{errors.emailOrName}</Text>
+              )}
             </View>
 
             <View style={styles.fieldGroup}>
               <View style={styles.labelRow}>
                 <Text style={styles.label}>Password</Text>
-                <TouchableOpacity activeOpacity={0.7}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={handleForgotPassword}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
                   <Text style={styles.forgotText}>Forgot?</Text>
                 </TouchableOpacity>
               </View>
               <TextInput
-                style={styles.input}
+                style={[styles.input, errors.password ? styles.inputError : null]}
                 placeholder="••••••••••••••••"
                 placeholderTextColor="#C7C7CC"
                 secureTextEntry
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  if (errors.password) {
+                    setErrors((prev) => ({ ...prev, password: undefined }));
+                  }
+                }}
               />
+              {errors.password && (
+                <Text style={styles.errorText}>{errors.password}</Text>
+              )}
             </View>
 
             <TouchableOpacity
@@ -121,6 +205,32 @@ export default function LoginScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <Modal
+        visible={showForgotModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowForgotModal(false)}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <View style={styles.modalIconBox}>
+              <MaterialIcons name="mark-email-read" size={32} color="#006a43" />
+            </View>
+            <Text style={styles.modalTitle}>Reset Password</Text>
+            <Text style={styles.modalDesc}>
+              A password reset link has been sent to your email.
+            </Text>
+            <TouchableOpacity
+              style={styles.modalButton}
+              activeOpacity={0.85}
+              onPress={() => setShowForgotModal(false)}
+            >
+              <Text style={styles.modalButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -144,7 +254,7 @@ const styles = StyleSheet.create({
     paddingTop: 22,
   },
   fieldGroup: {
-    marginBottom: 26,
+    marginBottom: 22,
   },
   labelRow: {
     flexDirection: "row",
@@ -160,7 +270,7 @@ const styles = StyleSheet.create({
   forgotText: {
     fontSize: 12,
     color: "#B0B5BC",
-    fontWeight: "500",
+    fontWeight: "600",
     marginBottom: 8,
   },
   input: {
@@ -170,6 +280,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#2C333A",
     paddingVertical: 8,
+  },
+  inputError: {
+    borderBottomColor: "#EF4444",
+  },
+  errorText: {
+    fontSize: 11,
+    color: "#EF4444",
+    marginTop: 4,
+    fontWeight: "500",
   },
   submitButton: {
     height: 52,
@@ -238,5 +357,61 @@ const styles = StyleSheet.create({
     color: "#8D949E",
     fontWeight: "600",
     textDecorationLine: "underline",
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(19, 30, 26, 0.55)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  modalCard: {
+    width: "100%",
+    maxWidth: 340,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    paddingVertical: 28,
+    paddingHorizontal: 24,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  modalIconBox: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#E4F7ED",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#131E1A",
+    marginBottom: 8,
+  },
+  modalDesc: {
+    fontSize: 14,
+    color: "#5B636E",
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 22,
+  },
+  modalButton: {
+    width: "100%",
+    height: 46,
+    backgroundColor: "#006A43",
+    borderRadius: 23,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "600",
   },
 });
